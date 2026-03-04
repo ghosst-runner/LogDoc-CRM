@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LogiDocs — Логистический портал</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --secondary: #7c3aed;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --info: #0891b2;
+      --bg: #f1f5f9;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #cbd5e1;
+      --sidebar-active: #2563eb;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #ffffff;
+      --header-bg: #ffffff;
+      --modal-overlay: rgba(0,0,0,0.5);
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    .dark {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --primary-light: #1e3a5f;
+      --bg: #0f172a;
+      --sidebar-bg: #020617;
+      --card-bg: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --input-bg: #0f172a;
+      --header-bg: #1e293b;
+      --modal-overlay: rgba(0,0,0,0.75);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    /* LOGIN */
+    .login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #0f172a 0%, #1e3a6e 50%, #0f172a 100%); position:relative; overflow:hidden; }
+    .login-bg-circle { position:absolute; border-radius:50%; background: rgba(37,99,235,0.15); animation: pulse 4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.1);opacity:0.8} }
+    .login-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 48px; width: 420px; max-width: 95vw; position:relative; z-index:2; }
+    .login-logo { text-align:center; margin-bottom:32px; }
+    .login-logo-icon { width:64px; height:64px; background: var(--primary); border-radius:16px; display:inline-flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:12px; box-shadow: 0 0 30px rgba(37,99,235,0.5); }
+    .login-logo h1 { color:#fff; font-size:28px; font-weight:800; }
+    .login-logo p { color:rgba(255,255,255,0.5); font-size:13px; margin-top:4px; }
+    .login-input-group { margin-bottom:16px; }
+    .login-input-group label { display:block; color:rgba(255,255,255,0.7); font-size:13px; margin-bottom:6px; font-weight:500; }
+    .login-input { width:100%; padding:12px 16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px; font-family:inherit; transition:all 0.2s; }
+    .login-input:focus { outline:none; border-color: var(--primary); background:rgba(37,99,235,0.1); box-shadow:0 0 0 3px rgba(37,99,235,0.2); }
+    .login-input::placeholder { color:rgba(255,255,255,0.3); }
+    .login-btn { width:100%; padding:13px; background: var(--primary); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:8px; font-family:inherit; }
+    .login-btn:hover { background: var(--primary-dark); transform:translateY(-1px); box-shadow: 0 4px 15px rgba(37,99,235,0.4); }
+    .login-demo-accounts { margin-top:24px; padding:16px; background:rgba(255,255,255,0.05); border-radius:10px; border:1px solid rgba(255,255,255,0.08); }
+    .login-demo-accounts p { color:rgba(255,255,255,0.5); font-size:12px; margin-bottom:8px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+    .demo-acc { display:flex; justify-content:space-between; color:rgba(255,255,255,0.7); font-size:12px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:color 0.2s; }
+    .demo-acc:last-child { border-bottom:none; }
+    .demo-acc:hover { color:#fff; }
+    .demo-acc span:last-child { color: var(--primary); font-weight:600; }
+    .login-error { background:rgba(220,38,38,0.15); border:1px solid rgba(220,38,38,0.3); color:#fca5a5; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:12px; }
+    /* LAYOUT */
+    .app-layout { display:flex; min-height:100vh; }
+    /* SIDEBAR */
+    .sidebar { width:260px; background: var(--sidebar-bg); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; z-index:100; transition:width 0.3s; overflow:hidden; }
+    .sidebar.collapsed { width:70px; }
+    .sidebar-header { padding:20px 16px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; gap:12px; min-height:70px; }
+    .sidebar-logo-icon { width:38px; height:38px; min-width:38px; background: var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+    .sidebar-logo-text { overflow:hidden; white-space:nowrap; }
+    .sidebar-logo-text h2 { color:#fff; font-size:16px; font-weight:800; }
+    .sidebar-logo-text p { color:rgba(255,255,255,0.4); font-size:11px; }
+    .sidebar-nav { flex:1; padding:12px 8px; overflow-y:auto; }
+    .nav-section-title { color:rgba(255,255,255,0.25); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:8px 8px 4px; white-space:nowrap; overflow:hidden; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:all 0.2s; margin-bottom:2px; color: var(--sidebar-text); text-decoration:none; white-space:nowrap; position:relative; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:#fff; }
+    .nav-item.active { background: var(--primary); color:#fff; box-shadow: 0 4px 12px rgba(37,99,235,0.4); }
+    .nav-item-icon { font-size:18px; min-width:20px; text-align:center; }
+    .nav-item-text { font-size:13px; font-weight:500; overflow:hidden; }
+    .nav-item-badge { margin-left:auto; background:var(--danger); color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:10px; min-width:18px; text-align:center; }
+    .sidebar-footer { padding:12px 8px; border-top:1px solid rgba(255,255,255,0.05); }
+    .sidebar-user { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.2s; }
+    .sidebar-user:hover { background:rgba(255,255,255,0.06); }
+    .avatar { width:34px; height:34px; min-width:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; }
+    .sidebar-user-info { overflow:hidden; flex:1; }
+    .sidebar-user-info .name { color:#fff; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sidebar-user-info .role { color:rgba(255,255,255,0.4); font-size:11px; }
+    /* MAIN */
+    .main-content { flex:1; margin-left:260px; transition:margin-left 0.3s; min-height:100vh; display:flex; flex-direction:column; }
+    .main-content.sidebar-collapsed { margin-left:70px; }
+    /* HEADER */
+    .header { background: var(--header-bg); border-bottom:1px solid var(--border); padding:0 24px; height:70px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow: var(--shadow); }
+    .header-left { display:flex; align-items:center; gap:16px; }
+    .toggle-btn { width:36px; height:36px; border:1px solid var(--border); background:var(--card-bg); border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; }
+    .toggle-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .breadcrumb { font-size:13px; color:var(--text-muted); }
+    .breadcrumb span { color:var(--text); font-weight:600; }
+    .header-right { display:flex; align-items:center; gap:8px; }
+    .header-btn { width:38px; height:38px; border:1px solid var(--border); background:var(--card-bg); border-radius:9px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; position:relative; color:var(--text); }
+    .header-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .notif-dot { position:absolute; top:7px; right:7px; width:8px; height:8px; background:var(--danger); border-radius:50%; border:2px solid var(--header-bg); }
+    /* PAGE */
+    .page-content { padding:24px; flex:1; }
+    .page-header { margin-bottom:24px; }
+    .page-header h1 { font-size:26px; font-weight:800; color:var(--text); }
+    .page-header p { color:var(--text-muted); font-size:14px; margin-top:4px; }
+    /* CARDS */
+    .card { background: var(--card-bg); border-radius: var(--radius); border:1px solid var(--border); box-shadow: var(--shadow); }
+    .card-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .card-title { font-size:15px; font-weight:700; color:var(--text); }
+    .card-body { padding:20px; }
+    /* STAT CARDS */
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+    .stat-card { background:var(--card-bg); border-radius:var(--radius); border:1px solid var(--border); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow); transition:transform 0.2s, box-shadow 0.2s; cursor:default; }
+    .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+    .stat-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+    .stat-info { flex:1; min-width:0; }
+    .stat-value { font-size:26px; font-weight:800; color:var(--text); line-height:1; }
+    .stat-label { font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:500; }
+    .stat-change { font-size:11px; margin-top:6px; font-weight:600; }
+    .stat-change.up { color:var(--success); }
+    .stat-change.down { color:var(--danger); }
+    /* GRID LAYOUTS */
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+    /* TABLES */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead th { padding:10px 14px; text-align:left; color:var(--text-muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border); background:var(--bg); white-space:nowrap; }
+    tbody td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:middle; }
+    tbody tr { transition:background 0.15s; }
+    tbody tr:hover { background:var(--primary-light); }
+    tbody tr:last-child td { border-bottom:none; }
+    /* BADGES */
+    .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .badge-success { background:#dcfce7; color:#166534; }
+    .badge-warning { background:#fef3c7; color:#92400e; }
+    .badge-danger { background:#fee2e2; color:#991b1b; }
+    .badge-info { background:#e0f2fe; color:#075985; }
+    .badge-secondary { background:#f1f5f9; color:#475569; }
+    .badge-purple { background:#ede9fe; color:#5b21b6; }
+    .dark .badge-success { background:#14532d; color:#86efac; }
+    .dark .badge-warning { background:#451a03; color:#fcd34d; }
+    .dark .badge-danger { background:#450a0a; color:#fca5a5; }
+    .dark .badge-info { background:#0c4a6e; color:#7dd3fc; }
+    .dark .badge-secondary { background:#334155; color:#94a3b8; }
+    .dark .badge-purple { background:#2e1065; color:#c4b5fd; }
+    /* BUTTONS */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; font-family:inherit; white-space:nowrap; }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:var(--primary-dark); transform:translateY(-1px); box-shadow:0 4px 12px rgba(37,99,235,0.3); }
+    .btn-secondary { background:var(--card-bg); color:var(--text); border:1px solid var(--border); }
+    .btn-secondary:hover { background:var(--bg); }
+    .btn-success { background:var(--success); color:#fff; }
+    .btn-success:hover { opacity:0.9; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-danger:hover { opacity:0.9; }
+    .btn-warning { background:var(--warning); color:#fff; }
+    .btn-sm { padding:5px 10px; font-size:12px; border-radius:6px; }
+    .btn-icon { width:32px; height:32px; padding:0; justify-content:center; border-radius:7px; }
+    /* FORMS */
+    .form-group { margin-bottom:16px; }
+    .form-label { display:block; font-size:13px; font-weight:600; color:var(--text); margin-bottom:6px; }
+    .form-label.required::after { content:" *"; color:var(--danger); }
+    .form-control { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; background:var(--input-bg); color:var(--text); transition:all 0.2s; }
+    .form-control:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+    .form-control::placeholder { color:var(--text-muted); }
+    select.form-control { cursor:pointer; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+    /* MODAL */
+    .modal-overlay { position:fixed; inset:0; background:var(--modal-overlay); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.2s; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .modal { background:var(--card-bg); border-radius:16px; width:100%; max-height:90vh; overflow-y:auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation:slideUp 0.25s; }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .modal-sm { max-width:420px; }
+    .modal-md { max-width:600px; }
+    .modal-lg { max-width:800px; }
+    .modal-xl { max-width:1000px; }
+    .modal-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .modal-header h3 { font-size:17px; font-weight:700; }
+    .modal-body { padding:24px; }
+    .modal-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; }
+    .close-btn { width:32px; height:32px; border:none; background:var(--bg); border-radius:8px; cursor:pointer; font-size:18px; color:var(--text-muted); display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+    .close-btn:hover { background:var(--danger); color:#fff; }
+    /* SEARCH & FILTERS */
+    .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .search-box { position:relative; flex:1; min-width:200px; }
+    .search-box input { width:100%; padding:9px 12px 9px 36px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:var(--input-bg); color:var(--text); font-family:inherit; transition:all 0.2s; }
+    .search-box input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+    .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:15px; }
+    /* NOTIFICATIONS */
+    .notif-panel { position:fixed; right:16px; top:80px; width:360px; background:var(--card-bg); border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow-lg); z-index:150; max-height:500px; overflow-y:auto; animation:slideDown 0.2s; }
+    @keyframes slideDown { from{transform:translateY(-10px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .notif-item { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:12px; transition:background 0.15s; }
+    .notif-item:hover { background:var(--primary-light); }
+    .notif-item:last-child { border-bottom:none; }
+    .notif-item.unread { border-left:3px solid var(--primary); }
+    .notif-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .notif-content { flex:1; }
+    .notif-title { font-size:13px; font-weight:600; color:var(--text); }
+    .notif-desc { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .notif-time { font-size:11px; color:var(--text-muted); margin-top:4px; }
+    /* PROGRESS */
+    .progress-bar { background:var(--border); border-radius:4px; height:6px; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:4px; transition:width 0.5s ease; }
+    /* TABS */
+    .tabs { display:flex; gap:4px; background:var(--bg); border-radius:10px; padding:4px; margin-bottom:20px; }
+    .tab { flex:1; padding:8px 16px; border-radius:7px; border:none; background:transparent; cursor:pointer; font-size:13px; font-weight:500; color:var(--text-muted); transition:all 0.2s; font-family:inherit; text-align:center; }
+    .tab.active { background:var(--card-bg); color:var(--primary); font-weight:700; box-shadow:var(--shadow); }
+    /* KANBAN */
+    .kanban-board { display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; }
+    .kanban-col { min-width:260px; background:var(--bg); border-radius:var(--radius); padding:12px; }
+    .kanban-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .kanban-col-title { font-size:13px; font-weight:700; color:var(--text); }
+    .kanban-count { background:var(--border); color:var(--text-muted); font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
+    .kanban-card { background:var(--card-bg); border-radius:10px; padding:12px; margin-bottom:8px; border:1px solid var(--border); box-shadow:var(--shadow); cursor:pointer; transition:all 0.2s; }
+    .kanban-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); border-color:var(--primary); }
+    .kanban-card-num { font-size:11px; color:var(--text-muted); font-weight:600; margin-bottom:4px; }
+    .kanban-card-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:8px; }
+    .kanban-card-footer { display:flex; align-items:center; justify-content:space-between; }
+    /* EXCEL IMPORT */
+    .drop-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:40px; text-align:center; transition:all 0.3s; cursor:pointer; }
+    .drop-zone:hover, .drop-zone.dragover { border-color:var(--primary); background:var(--primary-light); }
+    .drop-zone-icon { font-size:48px; margin-bottom:12px; }
+    .drop-zone h3 { font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .drop-zone p { font-size:13px; color:var(--text-muted); }
+    /* LOG */
+    .log-item { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .log-item:last-child { border-bottom:none; }
+    .log-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+    .log-content { flex:1; }
+    .log-action { font-size:13px; color:var(--text); font-weight:500; }
+    .log-meta { font-size:11px; color:var(--text-muted); margin-top:2px; display:flex; gap:12px; }
+    /* USER CARD */
+    .user-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:all 0.2s; }
+    .user-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+    .user-avatar-lg { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:#fff; margin:0 auto 12px; }
+    .user-card-name { font-size:15px; font-weight:700; color:var(--text); }
+    .user-card-email { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .user-card-role { margin-top:8px; }
+    .user-card-actions { display:flex; gap:8px; justify-content:center; margin-top:14px; }
+    /* CHART */
+    .chart-bar-wrap { display:flex; flex-direction:column; gap:10px; }
+    .chart-bar-item { display:flex; align-items:center; gap:10px; }
+    .chart-bar-label { font-size:12px; color:var(--text-muted); width:140px; flex-shrink:0; text-align:right; }
+    .chart-bar-track { flex:1; background:var(--border); border-radius:4px; height:22px; position:relative; overflow:hidden; }
+    .chart-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:8px; font-size:11px; font-weight:700; color:#fff; transition:width 0.8s ease; }
+    .chart-bar-value { font-size:12px; font-weight:700; color:var(--text); width:40px; text-align:right; }
+    /* DONUT */
+    .donut-wrap { display:flex; align-items:center; gap:24px; }
+    .donut-legend { flex:1; }
+    .donut-legend-item { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .donut-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .donut-legend-label { font-size:12px; color:var(--text-muted); flex:1; }
+    .donut-legend-val { font-size:12px; font-weight:700; color:var(--text); }
+    /* TOAST */
+    .toast-container { position:fixed; bottom:24px; right:24px; z-index:999; display:flex; flex-direction:column; gap:8px; }
+    .toast { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; box-shadow:var(--shadow-lg); min-width:280px; animation:toastIn 0.3s; }
+    @keyframes toastIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+    .toast-icon { font-size:18px; }
+    .toast-text { flex:1; font-size:13px; color:var(--text); font-weight:500; }
+    .toast-close { cursor:pointer; color:var(--text-muted); font-size:16px; }
+    .toast.success { border-left:4px solid var(--success); }
+    .toast.error { border-left:4px solid var(--danger); }
+    .toast.warning { border-left:4px solid var(--warning); }
+    .toast.info { border-left:4px solid var(--info); }
+    /* CALENDAR */
+    .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+    .cal-day-name { text-align:center; font-size:11px; font-weight:700; color:var(--text-muted); padding:6px; text-transform:uppercase; }
+    .cal-day { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:8px; font-size:12px; cursor:pointer; position:relative; transition:all 0.15s; }
+    .cal-day:hover { background:var(--primary-light); }
+    .cal-day.today { background:var(--primary); color:#fff; font-weight:700; }
+    .cal-day.has-event::after { content:''; width:4px; height:4px; background:var(--warning); border-radius:50%; position:absolute; bottom:3px; }
+    .cal-day.other-month { color:var(--text-muted); opacity:0.4; }
+    /* EMPTY STATE */
+    .empty-state { text-align:center; padding:48px 24px; }
+    .empty-state-icon { font-size:56px; margin-bottom:16px; opacity:0.4; }
+    .empty-state h3 { font-size:16px; font-weight:700; color:var(--text); margin-bottom:8px; }
+    .empty-state p { font-size:13px; color:var(--text-muted); }
+    /* ACTIVITY TIMELINE */
+    .timeline { position:relative; padding-left:24px; }
+    .timeline::before { content:''; position:absolute; left:8px; top:0; bottom:0; width:2px; background:var(--border); }
+    .timeline-item { position:relative; padding-bottom:20px; }
+    .timeline-dot { width:16px; height:16px; border-radius:50%; position:absolute; left:-24px; top:2px; border:3px solid var(--card-bg); box-shadow:0 0 0 2px var(--primary); background:var(--primary); }
+    .timeline-content { font-size:13px; color:var(--text); font-weight:500; }
+    .timeline-time { font-size:11px; color:var(--text-muted); margin-top:2px; }
+    /* RESPONSIVE */
+    @media (max-width:768px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.mobile-open { transform:translateX(0); }
+      .main-content { margin-left:0; }
+      .grid-2, .grid-3 { grid-template-columns:1fr; }
+      .form-row, .form-row-3 { grid-template-columns:1fr; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+    }
+    /* MISC */
+    .divider { height:1px; background:var(--border); margin:16px 0; }
+    .text-muted { color:var(--text-muted); }
+    .text-sm { font-size:12px; }
+    .fw-bold { font-weight:700; }
+    .mt-1 { margin-top:4px; } .mt-2 { margin-top:8px; } .mt-3 { margin-top:12px; } .mt-4 { margin-top:16px; }
+    .mb-1 { margin-bottom:4px; } .mb-2 { margin-bottom:8px; } .mb-3 { margin-bottom:12px; } .mb-4 { margin-bottom:16px; }
+    .flex { display:flex; } .items-center { align-items:center; } .justify-between { justify-content:space-between; }
+    .gap-2 { gap:8px; } .gap-3 { gap:12px; } .gap-4 { gap:16px; }
+    .w-full { width:100%; }
+    .tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; background:var(--primary-light); color:var(--primary); }
+    input[type=file] { display:none; }
+    .switch { position:relative; display:inline-block; width:44px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; cursor:pointer; inset:0; background:var(--border); transition:.3s; border-radius:24px; }
+    .slider:before { position:absolute; content:''; height:18px; width:18px; left:3px; bottom:3px; background:#fff; transition:.3s; border-radius:50%; }
+    input:checked + .slider { background:var(--primary); }
+    input:checked + .slider:before { transform:translateX(20px); }
+    .page-fade { animation:fadeIn 0.3s; }
+    .highlight { background:rgba(37,99,235,0.1); border-radius:4px; padding:0 3px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ===================== DATA =====================
+const USERS_INIT = [
+  { id:1, name:'Администратор', email:'admin@logidocs.ru', password:'admin123', role:'admin', status:'active', avatar:'👨‍💼', color:'#2563eb', department:'ИТ отдел', phone:'+7 (999) 000-00-01', createdAt:'2024-01-01', lastLogin:'2025-06-10 09:15' },
+  { id:2, name:'Менеджер Иванов', email:'manager@logidocs.ru', password:'manager123', role:'manager', status:'active', avatar:'👩‍💼', color:'#7c3aed', department:'Логистика', phone:'+7 (999) 000-00-02', createdAt:'2024-02-15', lastLogin:'2025-06-10 08:30' },
+  { id:3, name:'Оператор Петров', email:'operator@logidocs.ru', password:'op123', role:'operator', status:'active', avatar:'👷', color:'#16a34a', department:'Склад', phone:'+7 (999) 000-00-03', createdAt:'2024-03-20', lastLogin:'2025-06-09 17:45' },
+  { id:4, name:'Просмотр Сидоров', email:'viewer@logidocs.ru', password:'view123', role:'viewer', status:'blocked', avatar:'👤', color:'#64748b', department:'Бухгалтерия', phone:'+7 (999) 000-00-04', createdAt:'2024-04-01', lastLogin:'2025-05-20 12:00' },
+];
+
+const ROLES = {
+  admin:   { label:'Администратор', color:'badge-danger',   icon:'👑', permissions:['all'] },
+  manager: { label:'Менеджер',      color:'badge-purple',   icon:'💼', permissions:['read','create','edit'] },
+  operator:{ label:'Оператор',      color:'badge-info',     icon:'⚙️', permissions:['read','create'] },
+  viewer:  { label:'Просмотр',      color:'badge-secondary',icon:'👁️', permissions:['read'] },
+};
+
+const DOC_TYPES = ['ТТН','Счёт-фактура','Манифест','Таможенная декл.','Упаковочный лист','Коносамент','CMR','Инвойс','Акт приёма-передачи','Поручение'];
+const STATUSES = ['Черновик','В обработке','Отправлен','В пути','Доставлен','Подписан','Отменён','На проверке'];
+const PRIORITIES = ['Низкий','Средний','Высокий','Критический'];
+const COUNTERPARTIES = ['ООО "Транслогист"','АО "ГлобалКарго"','ИП Смирнов Д.В.','ООО "БыстроДост"','ЗАО "ЕврологТранс"','ООО "СибирьКарго"'];
+
+const STATUS_COLORS = {
+  'Черновик':'badge-secondary','В обработке':'badge-warning','Отправлен':'badge-info',
+  'В пути':'badge-purple','Доставлен':'badge-success','Подписан':'badge-success',
+  'Отменён':'badge-danger','На проверке':'badge-warning'
+};
+const PRIORITY_COLORS = {
+  'Низкий':'badge-secondary','Средний':'badge-info','Высокий':'badge-warning','Критический':'badge-danger'
+};
+
+let docIdCounter = 20;
+const DOCS_INIT = Array.from({length:18}, (_,i) => ({
+  id: i+1,
+  number: `DOC-2025-${String(i+1).padStart(4,'0')}`,
+  type: DOC_TYPES[i % DOC_TYPES.length],
+  status: STATUSES[i % STATUSES.length],
+  priority: PRIORITIES[i % PRIORITIES.length],
+  sender: COUNTERPARTIES[i % COUNTERPARTIES.length],
+  receiver: COUNTERPARTIES[(i+2) % COUNTERPARTIES.length],
+  carrier: COUNTERPARTIES[(i+4) % COUNTERPARTIES.length],
+  route: `${['Москва','Санкт-Петербург','Новосибирск','Казань','Екатеринбург'][i%5]} → ${['Ростов','Уфа','Омск','Самара','Краснодар'][(i+1)%5]}`,
+  weight: (Math.random()*5000+100).toFixed(0) + ' кг',
+  volume: (Math.random()*20+1).toFixed(1) + ' м³',
+  amount: (Math.random()*500000+10000).toFixed(0),
+  currency: 'RUB',
+  date: `2025-0${(i%6)+1}-${String((i%28)+1).padStart(2,'0')}`,
+  deadline: `2025-0${((i+1)%6)+1}-${String(((i+5)%28)+1).padStart(2,'0')}`,
+  description: `Груз #${i+1}: товары народного потребления`,
+  trackNumber: `TRK${String(100+i).padStart(6,'0')}`,
+  createdBy: i%2===0 ? 'admin@logidocs.ru' : 'manager@logidocs.ru',
+  attachments: i%3===0 ? ['scan_doc.pdf','photo.jpg'] : [],
+  notes: '',
+  history: [
+    { status:'Черновик', date:'2025-01-01', user:'admin@logidocs.ru' },
+    { status: STATUSES[i % STATUSES.length], date:`2025-0${(i%6)+1}-${String((i%10)+1).padStart(2,'0')}`, user:'manager@logidocs.ru' }
+  ]
+}));
+
+let logIdCounter = 100;
+const LOGS_INIT = [
+  { id:1, action:'Вход в систему', user:'admin@logidocs.ru', role:'admin', ip:'192.168.1.1', time:'2025-06-10 09:15:33', type:'auth', details:'Успешная авторизация' },
+  { id:2, action:'Создан документ DOC-2025-0019', user:'manager@logidocs.ru', role:'manager', ip:'192.168.1.5', time:'2025-06-10 09:20:11', type:'create', details:'Тип: ТТН' },
+  { id:3, action:'Изменён статус документа', user:'admin@logidocs.ru', role:'admin', ip:'192.168.1.1', time:'2025-06-10 09:35:44', type:'edit', details:'DOC-2025-0005: В обработке → Отправлен' },
+  { id:4, action:'Импорт из Excel', user:'manager@logidocs.ru', role:'manager', ip:'192.168.1.5', time:'2025-06-10 10:00:00', type:'import', details:'Загружено 12 документов' },
+  { id:5, action:'Создан пользователь', user:'admin@logidocs.ru', role:'admin', ip:'192.168.1.1', time:'2025-06-10 10:15:00', type:'create', details:'operator@logidocs.ru' },
+  { id:6, action:'Экспорт отчёта', user:'admin@logidocs.ru', role:'admin', ip:'192.168.1.1', time:'2025-06-10 11:00:00', type:'export', details:'Отчёт за июнь 2025' },
+  { id:7, action:'Вход в систему', user:'operator@logidocs.ru', role:'operator', ip:'192.168.1.10', time:'2025-06-10 08:30:00', type:'auth', details:'Успешная авторизация' },
+  { id:8, action:'Удалён документ', user:'admin@logidocs.ru', role:'admin', ip:'192.168.1.1', time:'2025-06-09 17:00:00', type:'delete', details:'DOC-2025-0017 удалён' },
+];
+
+const NOTIFS_INIT = [
+  { id:1, title:'Новый документ требует подписания', desc:'DOC-2025-0012 ожидает вашей подписи', icon:'📋', color:'#eff6ff', time:'5 мин назад', read:false },
+  { id:2, title:'Груз доставлен', desc:'TRK100003 успешно доставлен получателю', icon:'✅', color:'#dcfce7', time:'1 час назад', read:false },
+  { id:3, title:'Срок документа истекает', desc:'DOC-2025-0007 — дедлайн через 2 дня', icon:'⚠️', color:'#fef3c7', time:'2 часа назад', read:true },
+  { id:4, title:'Импорт завершён', desc:'12 документов успешно импортированы из Excel', icon:'📊', color:'#ede9fe', time:'3 часа назад', read:true },
+  { id:5, title:'Новый пользователь зарегистрирован', desc:'operator@logidocs.ru добавлен в систему', icon:'👤', color:'#e0f2fe', time:'Вчера', read:true },
+];
+
+// ===================== UTILS =====================
+function genId() { return ++docIdCounter; }
+function genLogId() { return ++logIdCounter; }
+function genDocNum() { return `DOC-2025-${String(genId()).padStart(4,'0')}`; }
+function formatDate(d) { if(!d) return '—'; const dt = new Date(d); return dt.toLocaleDateString('ru-RU'); }
+function formatMoney(v) { return Number(v).toLocaleString('ru-RU') + ' ₽'; }
+function now() { return new Date().toLocaleString('ru-RU').replace(',',''); }
+
+// ===================== CONTEXT =====================
+const AppCtx = React.createContext(null);
+
+// ===================== TOAST =====================
+function Toast({ toasts, remove }) {
+  return <div className="toast-container">
+    {toasts.map(t => (
+      <div key={t.id} className={`toast ${t.type}`}>
+        <span className="toast-icon">{t.type==='success'?'✅':t.type==='error'?'❌':t.type==='warning'?'⚠️':'ℹ️'}</span>
+        <span className="toast-text">{t.text}</span>
+        <span className="toast-close" onClick={()=>remove(t.id)}>×</span>
+      </div>
+    ))}
+  </div>;
+}
+
+// ===================== LOGIN PAGE =====================
+function LoginPage({ onLogin }) {
+  const [email, setEmail] = useState('');
+  const [pass, setPass] = useState('');
+  const [error, setError] = useState('');
+  const [users] = useState(USERS_INIT);
+
+  const handleLogin = () => {
+    const u = users.find(u => u.email===email && u.password===pass);
+    if (!u) { setError('Неверный email или пароль'); return; }
+    if (u.status==='blocked') { setError('Ваш аккаунт заблокирован. Обратитесь к администратору.'); return; }
+    setError('');
+    onLogin(u);
+  };
+
+  const fillDemo = (e,p) => { setEmail(e); setPass(p); setError(''); };
+
+  return <div className="login-page">
+    <div className="login-bg-circle" style={{width:400,height:400,top:-100,left:-100}}/>
+    <div className="login-bg-circle" style={{width:300,height:300,bottom:-50,right:-50,animationDelay:'2s'}}/>
+    <div className="login-card">
+      <div className="login-logo">
+        <div className="login-logo-icon">🚚</div>
+        <h1>LogiDocs</h1>
+        <p>Логистический портал документооборота</p>
+      </div>
+      {error && <div className="login-error">⚠️ {error}</div>}
+      <div className="login-input-group">
+        <label>Email адрес</label>
+        <input className="login-input" type="email" placeholder="your@email.com" value={email}
+          onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleLogin()}/>
+      </div>
+      <div className="login-input-group">
+        <label>Пароль</label>
+        <input className="login-input" type="password" placeholder="••••••••" value={pass}
+          onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleLogin()}/>
+      </div>
+      <button className="login-btn" onClick={handleLogin}>Войти в систему →</button>
+      <div className="login-demo-accounts">
+        <p>🔑 Демо аккаунты (нажмите для заполнения)</p>
+        {[
+          ['admin@logidocs.ru','admin123','Администратор','admin'],
+          ['manager@logidocs.ru','manager123','Менеджер','manager'],
+          ['operator@logidocs.ru','op123','Оператор','operator'],
+          ['viewer@logidocs.ru','view123','Просмотр','viewer'],
+        ].map(([e,p,n,r])=>(
+          <div key={e} className="demo-acc" onClick={()=>fillDemo(e,p)}>
+            <span>{ROLES[r].icon} {n}</span>
+            <span>{e}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>;
+}
+
+// ===================== SIDEBAR =====================
+function Sidebar({ page, setPage, collapsed, setCollapsed, currentUser }) {
+  const { docs, logs } = React.useContext(AppCtx);
+  const unreadDocs = docs.filter(d=>d.status==='На проверке').length;
+  const isAdmin = currentUser.role === 'admin';
+
+  const navItems = [
+    { id:'dashboard', icon:'📊', label:'Дашборд', section:'Главное' },
+    { id:'documents', icon:'📄', label:'Документы', badge: unreadDocs||null, section:null },
+    { id:'kanban', icon:'🗂️', label:'Канбан', section:null },
+    { id:'tracking', icon:'📍', label:'Отслеживание', section:null },
+    { id:'import', icon:'📥', label:'Импорт Excel', section:null },
+    { id:'counterparties', icon:'🏢', label:'Контрагенты', section:'Справочники' },
+    { id:'calendar', icon:'📅', label:'Календарь', section:null },
+    { id:'reports', icon:'📈', label:'Отчёты', section:'Аналитика' },
+    ...(isAdmin ? [
+      { id:'users', icon:'👥', label:'Пользователи', section:'Администрирование' },
+      { id:'logs', icon:'📋', label:'Журнал событий', section:null },
+      { id:'settings', icon:'⚙️', label:'Настройки', section:null },
+    ] : []),
+  ];
+
+  let lastSection = null;
+  return <div className={`sidebar ${collapsed?'collapsed':''}`}>
+    <div className="sidebar-header">
+      <div className="sidebar-logo-icon">🚚</div>
+      {!collapsed && <div className="sidebar-logo-text">
+        <h2>LogiDocs</h2>
+        <p>v2.0 Pro</p>
+      </div>}
+    </div>
+    <nav className="sidebar-nav">
+      {navItems.map(item => {
+        const showSection = item.section && item.section !== lastSection;
+        if (item.section) lastSection = item.section;
+        return <React.Fragment key={item.id}>
+          {showSection && !collapsed && <div className="nav-section-title">{item.section}</div>}
+          <div className={`nav-item ${page===item.id?'active':''}`} onClick={()=>setPage(item.id)} title={item.label}>
+            <span className="nav-item-icon">{item.icon}</span>
+            {!collapsed && <span className="nav-item-text">{item.label}</span>}
+            {!collapsed && item.badge && <span className="nav-item-badge">{item.badge}</span>}
+          </div>
+        </React.Fragment>;
+      })}
+    </nav>
+    <div className="sidebar-footer">
+      <div className="sidebar-user" onClick={()=>setCollapsed(!collapsed)}>
+        <div className="avatar" style={{background:currentUser.color}}>{currentUser.avatar}</div>
+        {!collapsed && <div className="sidebar-user-info">
+          <div className="name">{currentUser.name}</div>
+          <div className="role">{ROLES[currentUser.role]?.label}</div>
+        </div>}
+        {!collapsed && <span style={{color:'rgba(255,255,255,0.4)',fontSize:12}}>{collapsed?'→':'←'}</span>}
+      </div>
+    </div>
+  </div>;
+}
+
+// ===================== HEADER =====================
+function Header({ page, collapsed, setCollapsed, currentUser, onLogout, notifs, setNotifs, addToast }) {
+  const [showNotif, setShowNotif] = useState(false);
+  const { dark, setDark } = React.useContext(AppCtx);
+  const unread = notifs.filter(n=>!n.read).length;
+  const pageNames = {
+    dashboard:'Дашборд', documents:'Документы', kanban:'Канбан доска', tracking:'Отслеживание',
+    import:'Импорт Excel', counterparties:'Контрагенты', calendar:'Календарь',
+    reports:'Отчёты', users:'Пользователи', logs:'Журнал событий', settings:'Настройки'
+  };
+  const toggleDark = () => { setDark(d=>!d); addToast(dark?'Светлая тема включена':'Тёмная тема включена','info'); };
+  const markAll = () => setNotifs(ns=>ns.map(n=>({...n,read:true})));
+
+  return <div className="header">
+    <div className="header-left">
+      <button className="toggle-btn" onClick={()=>setCollapsed(!collapsed)}>☰</button>
+      <div className="breadcrumb">LogiDocs / <span>{pageNames[page]||page}</span></div>
+    </div>
+    <div className="header-right">
+      <button className="header-btn" onClick={toggleDark} title="Тема">{dark?'☀️':'🌙'}</button>
+      <div style={{position:'relative'}}>
+        <button className="header-btn" onClick={()=>setShowNotif(s=>!s)} title="Уведомления">
+          🔔{unread>0 && <span className="notif-dot"/>}
+        </button>
+        {showNotif && <div className="notif-panel">
+          <div style={{padding:'12px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <span style={{fontWeight:700,fontSize:14}}>🔔 Уведомления {unread>0&&<span className="badge badge-danger" style={{marginLeft:6}}>{unread}</span>}</span>
+            <span style={{fontSize:12,color:'var(--primary)',cursor:'pointer'}} onClick={markAll}>Прочитать все</span>
+          </div>
+          {notifs.map(n=>(
+            <div key={n.id} className={`notif-item ${!n.read?'unread':''}`} onClick={()=>setNotifs(ns=>ns.map(x=>x.id===n.id?{...x,read:true}:x))}>
+              <div className="notif-icon" style={{background:n.color}}>{n.icon}</div>
+              <div className="notif-content">
+                <div className="notif-title">{n.title}</div>
+                <div className="notif-desc">{n.desc}</div>
+                <div className="notif-time">{n.time}</div>
+              </div>
+            </div>
+          ))}
+        </div>}
+      </div>
+      <button className="header-btn" title="Профиль">
+        <span style={{fontSize:16}}>{currentUser.avatar}</span>
+      </button>
+      <button className="btn btn-secondary btn-sm" onClick={onLogout}>Выйти</button>
+    </div>
+  </div>;
+}
+
+// ===================== DASHBOARD =====================
+function Dashboard({ setPage }) {
+  const { docs, users, logs } = React.useContext(AppCtx);
+  const total = docs.length;
+  const delivered = docs.filter(d=>d.status==='Доставлен'||d.status==='Подписан').length;
+  const inProgress = docs.filter(d=>d.status==='В пути'||d.status==='В обработке'||d.status==='Отправлен').length;
+  const overdue = docs.filter(d=>d.status!=='Доставлен'&&d.status!=='Подписан'&&d.status!=='Отменён'&&new Date(d.deadline)<new Date()).length;
+  const totalAmount = docs.reduce((s,d)=>s+Number(d.amount||0),0);
+  const criticalDocs = docs.filter(d=>d.priority==='Критический'&&d.status!=='Доставлен').length;
+
+  const recentDocs = [...docs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);
+  const recentLogs = logs.slice(0,5);
+
+  const stats = [
+    { icon:'📄', label:'Всего документов', value:total, change:'+12%', dir:'up', color:'#eff6ff', iconColor:'#2563eb' },
+    { icon:'✅', label:'Доставлено', value:delivered, change:'+8%', dir:'up', color:'#dcfce7', iconColor:'#16a34a' },
+    { icon:'🚚', label:'В процессе', value:inProgress, change:'-3%', dir:'down', color:'#fef3c7', iconColor:'#d97706' },
+    { icon:'⚠️', label:'Просрочено', value:overdue, change:'+2', dir:'down', color:'#fee2e2', iconColor:'#dc2626' },
+    { icon:'👥', label:'Пользователей', value:users.length, change:'+1', dir:'up', color:'#ede9fe', iconColor:'#7c3aed' },
+    { icon:'🔥', label:'Критических', value:criticalDocs, change:'—', dir:'up', color:'#fff7ed', iconColor:'#ea580c' },
+    { icon:'💰', label:'Оборот (₽)', value:formatMoney(totalAmount), change:'+15%', dir:'up', color:'#f0fdf4', iconColor:'#16a34a' },
+    { icon:'📋', label:'Событий сегодня', value:logs.length, change:'—', dir:'up', color:'#e0f2fe', iconColor:'#0891b2' },
+  ];
+
+  const typeStats = DOC_TYPES.slice(0,6).map(t=>({ type:t, count:docs.filter(d=>d.type===t).length })).sort((a,b)=>b.count-a.count);
+  const maxCount = Math.max(...typeStats.map(t=>t.count),1);
+  const BAR_COLORS = ['#2563eb','#7c3aed','#16a34a','#d97706','#dc2626','#0891b2'];
+
+  return <div className="page-fade">
+    <div className="page-header">
+      <h1>📊 Дашборд</h1>
+      <p>Добро пожаловать! Обзор системы документооборота — {new Date().toLocaleDateString('ru-RU',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+    </div>
+
+    {/* Баннер с быстрыми действиями */}
+    <div style={{background:'linear-gradient(135deg,#2563eb,#7c3aed)',borderRadius:16,padding:'20px 24px',marginBottom:24,display:'flex',alignItems:'center',justifyContent:'space-between',color:'#fff'}}>
+      <div>
+        <h2 style={{fontSize:20,fontWeight:800,marginBottom:4}}>🚀 Быстрые действия</h2>
+        <p style={{opacity:0.8,fontSize:13}}>Создайте новый документ или выполните импорт данных</p>
+      </div>
+      <div style={{display:'flex',gap:10}}>
+        <button className="btn" style={{background:'rgba(255,255,255,0.2)',color:'#fff',border:'1px solid rgba(255,255,255,0.3)'}} onClick={()=>setPage('documents')}>➕ Новый документ</button>
+        <button className="btn" style={{background:'rgba(255,255,255,0.2)',color:'#fff',border:'1px solid rgba(255,255,255,0.3)'}} onClick={()=>setPage('import')}>📥 Импорт Excel</button>
+        <button className="btn" style={{background:'rgba(255,255,255,0.2)',color:'#fff',border:'1px solid rgba(255,255,255,0.3)'}} onClick={()=>setPage('reports')}>📈 Отчёты</button>
+      </div>
+    </div>
+
+    <div className="stats-grid">
+      {stats.map((s,i)=>(
+        <div key={i} className="stat-card">
+          <div className="stat-icon" style={{background:s.color}}><span style={{fontSize:22}}>{s.icon}</span></div>
+          <div className="stat-info">
+            <div className="stat-value">{s.value}</div>
+            <div className="stat-label">{s.label}</div>
+            <div className={`stat-change ${s.dir}`}>{s.dir==='up'?'↑':'↓'} {s.change} к прошлому месяцу</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid-2" style={{marginBottom:24}}>
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">📊 Документы по типам</span>
+        </div>
+        <div className="card-body">
+          <div className="chart-bar-wrap">
+            {typeStats.map((t,i)=>(
+              <div key={t.type} className="chart-bar-item">
+                <div className="chart-bar-label">{t.type}</div>
+                <div className="chart-bar-track">
+                  <div className="chart-bar-fill" style={{width:`${(t.count/maxCount)*100}%`,background:BAR_COLORS[i]}}>{t.count>0?t.count:''}</div>
+                </div>
+                <div className="chart-bar-value">{t.count}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header"><span className="card-title">📉 Статусы документов</span></div>
+        <div className="card-body">
+          <div className="donut-wrap">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              {(() => {
+                const statusData = STATUSES.map((s,i)=>({s,count:docs.filter(d=>d.status===s).length,color:['#2563eb','#d97706','#0891b2','#7c3aed','#16a34a','#16a34a','#dc2626','#d97706'][i]})).filter(x=>x.count>0);
+                const total2 = statusData.reduce((a,b)=>a+b.count,0)||1;
+                let cumAngle = -Math.PI/2;
+                return statusData.map((item,i)=>{
+                  const angle = (item.count/total2)*2*Math.PI;
+                  const x1=60+55*Math.cos(cumAngle), y1=60+55*Math.sin(cumAngle);
+                  cumAngle+=angle;
+                  const x2=60+55*Math.cos(cumAngle), y2=60+55*Math.sin(cumAngle);
+                  const large=angle>Math.PI?1:0;
+                  return <path key={i} d={`M60,60 L${x1},${y1} A55,55 0 ${large},1 ${x2},${y2} Z`} fill={item.color} opacity="0.85"/>;
+                });
+              })()}
+              <circle cx="60" cy="60" r="35" fill="var(--card-bg)"/>
+              <text x="60" y="56" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--text)">{docs.length}</text>
+              <text x="60" y="68" textAnchor="middle" fontSize="9" fill="var(--text-muted)">всего</text>
+            </svg>
+            <div className="donut-legend">
+              {STATUSES.map((s,i)=>{
+                const count=docs.filter(d=>d.status===s).length;
+                if(!count) return null;
+                return <div key={s} className="donut-legend-item">
+                  <div className="donut-dot" style={{background:['#2563eb','#d97706','#0891b2','#7c3aed','#16a34a','#16a34a','#dc2626','#d97706'][i]}}/>
+                  <span className="donut-legend-label">{s}</span>
+                  <span className="donut-legend-val">{count}</span>
+                </div>;
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="grid-2">
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">📄 Последние документы</span>
+          <button className="btn btn-secondary btn-sm" onClick={()=>setPage('documents')}>Все →</button>
+        </div>
+        <div className="card-body" style={{padding:0}}>
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Номер</th><th>Тип</th><th>Маршрут</th><th>Статус</th></tr></thead>
+              <tbody>
+                {recentDocs.map(d=>(
+                  <tr key={d.id}>
+                    <td><span style={{fontWeight:700,color:'var(--primary)'}}>{d.number}</span></td>
+                    <td>{d.type}</td>
+                    <td style={{fontSize:12}}>{d.route}</td>
+                    <td><span className={`badge ${STATUS_COLORS[d.status]}`}>{d.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">📋 Последние события</span>
+          <button className="btn btn-secondary btn-sm" onClick={()=>setPage('logs')}>Все →</button>
+        </div>
+        <div className="card-body">
+          <div className="timeline">
+            {recentLogs.map(l=>(
+              <div key={l.id} className="timeline-item">
+                <div className="timeline-dot" style={{background:l.type==='auth'?'#16a34a':l.type==='delete'?'#dc2626':l.type==='import'?'#7c3aed':'#2563eb'}}/>
+                <div className="timeline-content">{l.action}</div>
+                <div className="timeline-time">👤 {l.user} · {l.time}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ===================== DOCUMENTS =====================
+function Documents({ currentUser, addLog }) {
+  const { docs, setDocs } = React.useContext(AppCtx);
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterPriority, setFilterPriority] = useState('');
+  const [sort, setSort] = useState({ col:'date', dir:'desc' });
+  const [showForm, setShowForm] = useState(false);
+  const [editDoc, setEditDoc] = useState(null);
+  const [viewDoc, setViewDoc] = useState(null);
+  const [page, setPage2] = useState(1);
+  const PER_PAGE = 10;
+
+  const canEdit = ['admin','manager'].includes(currentUser.role);
+  const canCreate = ['admin','manager','operator'].includes(currentUser.role);
+
+  const filtered = useMemo(()=>{
+    let d = docs;
+    if(search) d=d.filter(x=>[x.number,x.type,x.sender,x.receiver,x.route,x.trackNumber].join(' ').toLowerCase().includes(search.toLowerCase()));
+    if(filterStatus) d=d.filter(x=>x.status===filterStatus);
+    if(filterType) d=d.filter(x=>x.type===filterType);
+    if(filterPriority) d=d.filter(x=>x.priority===filterPriority);
+    d=[...d].sort((a,b)=>{
+      let va=a[sort.col]||'', vb=b[sort.col]||'';
+      return sort.dir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    });
+    return d;
+  },[docs,search,filterStatus,filterType,filterPriority,sort]);
+
+  const pages = Math.ceil(filtered.length/PER_PAGE);
+  const paged = filtered.slice((page-1)*PER_PAGE, page*PER_PAGE);
+
+  const sortBy = col => setSort(s=>({ col, dir: s.col===col&&s.dir==='asc'?'desc':'asc' }));
+  const arrow = col => sort.col===col?(sort.dir==='asc'?' ↑':' ↓'):'';
+
+  const handleSave = (doc) => {
+    if(doc.id) {
+      setDocs(ds=>ds.map(d=>d.id===doc.id?doc:d));
+      addLog('Изменён документ '+doc.number, currentUser.email, currentUser.role, 'edit');
+    } else {
+      const newDoc = {...doc, id:genId(), number:genDocNum(), date:new Date().toISOString().split('T')[0], createdBy:currentUser.email, history:[{status:doc.status,date:now(),user:currentUser.email}]};
+      setDocs(ds=>[newDoc,...ds]);
+      addLog('Создан документ '+newDoc.number, currentUser.email, currentUser.role, 'create');
+    }
+    setShowForm(false); setEditDoc(null);
+  };
+
+  const handleDelete = (id) => {
+    const doc = docs.find(d=>d.id===id);
+    if(!confirm(`Удалить документ ${doc?.number}?`)) return;
+    setDocs(ds=>ds.filter(d=>d.id!==id));
+    addLog('Удалён документ '+doc?.number, currentUser.email, currentUser.role, 'delete');
+  };
+
+  const exportCSV = () => {
+    const rows = [['Номер','Тип','Статус','Приоритет','Отправитель','Получатель','Маршрут','Сумма','Дата']];
+    filtered.forEach(d=>rows.push([d.number,d.type,d.status,d.priority,d.sender,d.receiver,d.route,d.amount,d.date]));
+    const csv = rows.map(r=>r.join(';')).join('\n');
+    const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv); a.download='documents.csv'; a.click();
+    addLog('Экспорт документов в CSV', currentUser.email, currentUser.role, 'export');
+  };
+
+  return <div className="page-fade">
+    <div className="page-header" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}}>
+      <div>
+        <h1>📄 Документы</h1>
+        <p>Управление логистическими документами · Найдено: {filtered.length}</p>
+      </div>
+      <div style={{display:'flex',gap:10}}>
+        {canCreate && <button className="btn btn-primary" onClick={()=>{setEditDoc(null);setShowForm(true);}}>➕ Создать</button>}
+        <button className="btn btn-secondary" onClick={exportCSV}>⬇️ CSV</button>
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="card-body" style={{paddingBottom:8}}>
+        <div className="toolbar">
+          <div className="search-box">
+            <span className="search-icon">🔍</span>
+            <input placeholder="Поиск по номеру, типу, маршруту..." value={search} onChange={e=>{setSearch(e.target.value);setPage2(1);}}/>
+          </div>
+          <select className="form-control" style={{width:'auto'}} value={filterStatus} onChange={e=>{setFilterStatus(e.target.value);setPage2(1);}}>
+            <option value="">Все статусы</option>
+            {STATUSES.map(s=><option key={s}>{s}</option>)}
+          </select>
+          <select className="form-control" style={{width:'auto'}} value={filterType} onChange={e=>{setFilterType(e.target.value);setPage2(1);}}>
+            <option value="">Все типы</option>
+            {DOC_TYPES.map(t=><option key={t}>{t}</option>)}
+          </select>
+          <select className="form-control" style={{width:'auto'}} value={filterPriority} onChange={e=>{setFilterPriority(e.target.value);setPage2(1);}}>
+            <option value="">Все приоритеты</option>
+            {PRIORITIES.map(p=><option key={p}>{p}</option>)}
+          </select>
+          {(search||filterStatus||filterType||filterPriority) && <button className="btn btn-secondary btn-sm" onClick={()=>{setSearch('');setFilterStatus('');setFilterType('');setFilterPriority('');}}>✕ Сбросить</button>}
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                {[['number','Номер'],['type','Тип'],['status','Статус'],['priority','Приоритет'],['sender','Отправитель'],['route','Маршрут'],['amount','Сумма'],['date','Дата'],['deadline','Дедлайн']].map(([col,label])=>(
+                  <th key={col} style={{cursor:'pointer'}} onClick={()=>sortBy(col)}>{label}{arrow(col)}</th>
+                ))}
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paged.length===0 && <tr><td colSpan={10}><div className="empty-state"><div className="empty-state-icon">📭</div><h3>Документов не найдено</h3><p>Измените параметры фильтрации</p></div></td></tr>}
+              {paged.map(d=>(
+                <tr key={d.id}>
+                  <td><b style={{color:'var(--primary)',cursor:'pointer'}} onClick={()=>setViewDoc(d)}>{d.number}</b></td>
+                  <td><span className="tag">{d.type}</span></td>
+                  <td><span className={`badge ${STATUS_COLORS[d.status]}`}>{d.status}</span></td>
+                  <td><span className={`badge ${PRIORITY_COLORS[d.priority]}`}>{d.priority}</span></td>
+                  <td style={{maxWidth:140,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{d.sender}</td>
+                  <td style={{fontSize:12,color:'var(--text-muted)'}}>{d.route}</td>
+                  <td style={{fontWeight:600}}>{formatMoney(d.amount)}</td>
+                  <td style={{fontSize:12}}>{formatDate(d.date)}</td>
+                  <td style={{fontSize:12,color:new Date(d.deadline)<new Date()&&!['Доставлен','Подписан','Отменён'].includes(d.status)?'var(--danger)':'var(--text-muted)'}}>{formatDate(d.deadline)}</td>
+                  <td>
+                    <div style={{display:'flex',gap:4}}>
+                      <button className="btn btn-secondary btn-sm btn-icon" onClick={()=>setViewDoc(d)} title="Просмотр">👁</button>
+                      {canEdit && <button className="btn btn-secondary btn-sm btn-icon" onClick={()=>{setEditDoc(d);setShowForm(true);}} title="Редактировать">✏️</button>}
+                      {canEdit && <button className="btn btn-danger btn-sm btn-icon" onClick={()=>handleDelete(d.id)} title="Удалить">🗑</button>}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {pages>1 && <div style={{display:'flex',gap:6,justifyContent:'center',padding:'16px 0',flexWrap:'wrap'}}>
+          {Array.from({length:pages},(_,i)=>(
+            <button key={i} className={`btn btn-sm ${page===i+1?'btn-primary':'btn-secondary'}`} onClick={()=>setPage2(i+1)}>{i+1}</button>
+          ))}
+        </div>}
+      </div>
+    </div>
+
+    {showForm && <DocFormModal doc={editDoc} onSave={handleSave} onClose={()=>{setShowForm(false);setEditDoc(null);}}/>}
+    {viewDoc && <DocViewModal doc={viewDoc} onClose={()=>setViewDoc(null)} onEdit={canEdit?d=>{setViewDoc(null);setEditDoc(d);setShowForm(true);}:null}/>}
+  </div>;
+}
+
+function DocFormModal({ doc, onSave, onClose }) {
+  const [form, setForm] = useState(doc ? {...doc} : {
+    type:DOC_TYPES[0], status:'Черновик', priority:'Средний',
+    sender:COUNTERPARTIES[0], receiver:COUNTERPARTIES[1], carrier:COUNTERPARTIES[2],
+    route:'', weight:'', volume:'', amount:'', currency:'RUB',
+    deadline:'', description:'', trackNumber:'TRK'+Math.random().toString().slice(2,8), notes:'', attachments:[]
+  });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  return <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal modal-lg">
+      <div className="modal-header">
+        <h3>{doc?'✏️ Редактировать документ':'➕ Новый документ'}</h3>
+        <button className="close-btn" onClick={onClose}>×</button>
+      </div>
+      <div className="modal-body">
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label required">Тип документа</label>
+            <select className="form-control" value={form.type} onChange={e=>set('type',e.target.value)}>
+              {DOC_TYPES.map(t=><option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label required">Статус</label>
+            <select className="form-control" value={form.status} onChange={e=>set('status',e.target.value)}>
+              {STATUSES.map(s=><option key={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label required">Приоритет</label>
+            <select className="form-control" value={form.priority} onChange={e=>set('priority',e.target.value)}>
+              {PRIORITIES.map(p=><option key={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Трек-номер</label>
+            <input className="form-control" value={form.trackNumber} onChange={e=>set('trackNumber',e.target.value)}/>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label required">Отправитель</label>
+            <select className="form-control" value={form.sender} onChange={e=>set('sender',e.target.value)}>
+              {COUNTERPARTIES.map(c=><option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label required">Получатель</label>
+            <select className="form-control" value={form.receiver} onChange={e=>set('receiver',e.target.value)}>
+              {COUNTERPARTIES.map(c=><option key={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Перевозчик</label>
+            <select className="form-control" value={form.carrier} onChange={e=>set('carrier',e.target.value)}>
+              {COUNTERPARTIES.map(c=><option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Маршрут</label>
+            <input className="form-control" placeholder="Город А → Город Б" value={form.route} onChange={e=>set('route',e.target.value)}/>
+          </div>
+        </div>
+        <div className="form-row-3">
+          <div className="form-group">
+            <label className="form-label">Вес (кг)</label>
+            <input className="form-control" type="number" value={form.weight} onChange={e=>set('weight',e.target.value+' кг')}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Объём (м³)</label>
+            <input className="form-control" type="number" value={form.volume} onChange={e=>set('volume',e.target.value+' м³')}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Сумма (₽)</label>
+            <input className="form-control" type="number" value={form.amount} onChange={e=>set('amount',e.target.value)}/>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Дедлайн</label>
+            <input className="form-control" type="date" value={form.deadline} onChange={e=>set('deadline',e.target.value)}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Описание груза</label>
+            <input className="form-control" value={form.description} onChange={e=>set('description',e.target.value)}/>
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Примечания</label>
+          <textarea className="form-control" rows={3} value={form.notes} onChange={e=>set('notes',e.target.value)} style={{resize:'vertical'}}/>
+        </div>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={onClose}>Отмена</button>
+        <button className="btn btn-primary" onClick={()=>onSave(form)}>💾 Сохранить</button>
+      </div>
+    </div>
+  </div>;
+}
+
+function DocViewModal({ doc, onClose, onEdit }) {
+  return <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal modal-lg">
+      <div className="modal-header">
+        <div>
+          <h3>📋 {doc.number}</h3>
+          <div style={{fontSize:12,color:'var(--text-muted)',marginTop:2}}>{doc.type} · Создан: {formatDate(doc.date)}</div>
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          {onEdit && <button className="btn btn-secondary btn-sm" onClick={()=>onEdit(doc)}>✏️ Редактировать</button>}
+          <button className="close-btn" onClick={onClose}>×</button>
+        </div>
+      </div>
+      <div className="modal-body">
+        <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
+          <span className={`badge ${STATUS_COLORS[doc.status]}`}>{doc.status}</span>
+          <span className={`badge ${PRIORITY_COLORS[doc.priority]}`}>🔥 {doc.priority}</span>
+          <span className="badge badge-info">🚚 {doc.trackNumber}</span>
+        </div>
+        <div className="grid-2" style={{gap:24}}>
+          <div>
+            <h4 style={{fontSize:13,fontWeight:700,marginBottom:12,color:'var(--text-muted)'}}>СТОРОНЫ СДЕЛКИ</h4>
+            {[['📤 Отправитель',doc.sender],['📥 Получатель',doc.receiver],['🚛 Перевозчик',doc.carrier]].map(([l,v])=>(
+              <div key={l} style={{marginBottom:10}}>
+                <div style={{fontSize:11,color:'var(--text-muted)',fontWeight:600}}>{l}</div>
+                <div style={{fontSize:13,fontWeight:600}}>{v}</div>
+              </div>
+            ))}
+          </div>
+          <div>
+            <h4 style={{fontSize:13,fontWeight:700,marginBottom:12,color:'var(--text-muted)'}}>ДЕТАЛИ ГРУЗА</h4>
+            {[['📍 Маршрут',doc.route],['⚖️ Вес',doc.weight],['📦 Объём',doc.volume],['💰 Сумма',formatMoney(doc.amount)],['📅 Дедлайн',formatDate(doc.deadline)]].map(([l,v])=>(
+              <div key={l} style={{marginBottom:10}}>
+                <div style={{fontSize:11,color:'var(--text-muted)',fontWeight:600}}>{l}</div>
+                <div style={{fontSize:13,fontWeight:600}}>{v||'—'}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {doc.description && <div style={{marginTop:16,padding:14,background:'var(--bg)',borderRadius:10}}>
+          <div style={{fontSize:11,color:'var(--text-muted)',fontWeight:600,marginBottom:4}}>📝 ОПИСАНИЕ</div>
+          <div style={{fontSize:13}}>{doc.description}</div>
+        </div>}
+        {doc.notes && <div style={{marginTop:12,padding:14,background:'#fef3c7',borderRadius:10}}>
+          <div style={{fontSize:11,color:'#92400e',fontWeight:600,marginBottom:4}}>💬 ПРИМЕЧАНИЯ</div>
+          <div style={{fontSize:13,color:'#78350f'}}>{doc.notes}</div>
+        </div>}
+        {doc.history && doc.history.length>0 && <div style={{marginTop:16}}>
+          <h4 style={{fontSize:13,fontWeight:700,marginBottom:12}}>📜 История изменений</h4>
+          <div className="timeline">
+            {doc.history.map((h,i)=>(
+              <div key={i} className="timeline-item">
+                <div className="timeline-dot" style={{background:'var(--primary)'}}/>
+                <div className="timeline-content"><span className={`badge ${STATUS_COLORS[h.status]}`}>{h.status}</span></div>
+                <div className="timeline-time">👤 {h.user} · {h.date}</div>
+              </div>
+            ))}
+          </div>
+        </div>}
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={onClose}>Закрыть</button>
+        <button className="btn btn-primary" onClick={()=>{
+          const csv=`Номер;Тип;Статус;Отправитель;Получатель;Маршрут;Сумма\n${doc.number};${doc.type};${doc.status};${doc.sender};${doc.receiver};${doc.route};${doc.amount}`;
+          const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv); a.download=doc.number+'.csv'; a.click();
+        }}>⬇️ Экспорт</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ===================== KANBAN =====================
+function Kanban({ currentUser, addLog }) {
+  const { docs, setDocs } = React.useContext(AppCtx);
+  const [viewDoc, setViewDoc] = useState(null);
+  const [drag, setDrag] = useState(null);
+  const [filterType, setFilterType] = useState('');
+  const canEdit = ['admin','manager'].includes(currentUser.role);
+
+  const cols = [
+    { id:'Черновик', label:'Черновик', color:'#64748b' },
+    { id:'В обработке', label:'В обработке', color:'#d97706' },
+    { id:'Отправлен', label:'Отправлен', color:'#0891b2' },
+    { id:'В пути', label:'В пути', color:'#7c3aed' },
+    { id:'На проверке', label:'На проверке', color:'#ea580c' },
+    { id:'Доставлен', label:'Доставлен', color:'#16a34a' },
+    { id:'Отменён', label:'Отменён', color:'#dc2626' },
+  ];
+
+  const filtered = filterType ? docs.filter(d=>d.type===filterType) : docs;
+
+  const handleDrop = (status) => {
+    if(!drag || !canEdit) return;
+    setDocs(ds=>ds.map(d=>d.id===drag?{...d,status,history:[...(d.history||[]),{status,date:now(),user:currentUser.email}]}:d));
+    addLog(`Статус документа изменён → ${status}`, currentUser.email, currentUser.role, 'edit');
+    setDrag(null);
+  };
+
+  return <div className="page-fade">
+    <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+      <div><h1>🗂️ Канбан доска</h1><p>Визуальное управление статусами документов{canEdit?' · Перетащите карточку для смены статуса':''}</p></div>
+      <select className="form-control" style={{width:200}} value={filterType} onChange={e=>setFilterType(e.target.value)}>
+        <option value="">Все типы</option>
+        {DOC_TYPES.map(t=><option key={t}>{t}</option>)}
+      </select>
+    </div>
+    <div className="kanban-board">
+      {cols.map(col=>{
+        const colDocs = filtered.filter(d=>d.status===col.id);
+        return <div key={col.id} className="kanban-col"
+          onDragOver={e=>{e.preventDefault();}}
+          onDrop={()=>handleDrop(col.id)}>
+          <div className="kanban-col-header">
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <div style={{width:10,height:10,borderRadius:'50%',background:col.color}}/>
+              <span className="kanban-col-title">{col.label}</span>
+            </div>
+            <span className="kanban-count">{colDocs.length}</span>
+          </div>
+          {colDocs.map(d=>(
+            <div key={d.id} className="kanban-card"
+              draggable={canEdit}
+              onDragStart={()=>setDrag(d.id)}
+              onClick={()=>setViewDoc(d)}>
+              <div className="kanban-card-num">{d.number}</div>
+              <div className="kanban-card-title">{d.type}</div>
+              <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:6}}>📍 {d.route||'—'}</div>
+              <div className="kanban-card-footer">
+                <span className={`badge ${PRIORITY_COLORS[d.priority]}`} style={{fontSize:10}}>{d.priority}</span>
+                <span style={{fontSize:11,color:'var(--text-muted)'}}>💰 {formatMoney(d.amount)}</span>
+              </div>
+            </div>
+          ))}
+          {colDocs.length===0 && <div style={{textAlign:'center',padding:24,color:'var(--text-muted)',fontSize:12}}>Нет документов</div>}
+        </div>;
+      })}
+    </div>
+    {viewDoc && <DocViewModal doc={viewDoc} onClose={()=>setViewDoc(null)} onEdit={null}/>}
+  </div>;
+}
+
+// ===================== TRACKING =====================
+function Tracking() {
+  const { docs } = React.useContext(AppCtx);
+  const [query, setQuery] = useState('');
+  const [found, setFound] = useState(null);
+  const [searched, setSearched] = useState(false);
+
+  const STEPS = ['Черновик','В обработке','Отправлен','В пути','Доставлен'];
+
+  const handleSearch = () => {
+    const d = docs.find(x=>x.trackNumber===query.trim()||x.number===query.trim());
+    setFound(d||null); setSearched(true);
+  };
+
+  const stepIdx = found ? STEPS.indexOf(found.status) : -1;
+
+  return <div className="page-fade">
+    <div className="page-header"><h1>📍 Отслеживание груза</h1><p>Введите трек-номер или номер документа</p></div>
+    <div className="card" style={{marginBottom:20}}>
+      <div className="card-body">
+        <div style={{display:'flex',gap:10,maxWidth:600}}>
+          <input className="form-control" placeholder="TRK100001 или DOC-2025-0001" value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSearch()}/>
+          <button className="btn btn-primary" onClick={handleSearch}>🔍 Найти</button>
+        </div>
+        <div style={{marginTop:12,display:'flex',gap:8,flexWrap:'wrap'}}>
+          {docs.slice(0,5).map(d=><span key={d.id} className="tag" style={{cursor:'pointer'}} onClick={()=>{setQuery(d.trackNumber);setFound(d);setSearched(true);}}>{d.trackNumber}</span>)}
+        </div>
+      </div>
+    </div>
+
+    {searched && !found && <div className="card"><div className="card-body"><div className="empty-state"><div className="empty-state-icon">🔍</div><h3>Ничего не найдено</h3><p>Проверьте правильность введённого номера</p></div></div></div>}
+
+    {found && <div>
+      <div className="card" style={{marginBottom:16}}>
+        <div className="card-header">
+          <div>
+            <span className="card-title">📦 {found.number}</span>
+            <span style={{marginLeft:10}} className={`badge ${STATUS_COLORS[found.status]}`}>{found.status}</span>
+          </div>
+          <span className="badge badge-info">🚚 {found.trackNumber}</span>
+        </div>
+        <div className="card-body">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32,position:'relative'}}>
+            <div style={{position:'absolute',top:'50%',left:0,right:0,height:3,background:'var(--border)',transform:'translateY(-50%)',zIndex:0}}/>
+            <div style={{position:'absolute',top:'50%',left:0,height:3,width:`${Math.max(0,stepIdx)/(STEPS.length-1)*100}%`,background:'var(--primary)',transform:'translateY(-50%)',zIndex:1,transition:'width 0.5s'}}/>
+            {STEPS.map((s,i)=>{
+              const done = stepIdx>=i;
+              const cur = stepIdx===i;
+              return <div key={s} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8,zIndex:2,flex:1}}>
+                <div style={{width:36,height:36,borderRadius:'50%',background:done?'var(--primary)':'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',color:done?'#fff':'var(--text-muted)',fontWeight:700,fontSize:13,border:cur?'3px solid var(--primary-dark)':'3px solid transparent',boxSizing:'border-box',transition:'all 0.3s'}}>
+                  {done?'✓':(i+1)}
+                </div>
+                <div style={{fontSize:11,fontWeight:cur?700:500,color:done?'var(--primary)':'var(--text-muted)',textAlign:'center'}}>{s}</div>
+              </div>;
+            })}
+          </div>
+          <div className="grid-2">
+            <div>
+              {[['📤 Отправитель',found.sender],['📥 Получатель',found.receiver],['🚛 Перевозчик',found.carrier],['📍 Маршрут',found.route]].map(([l,v])=>(
+                <div key={l} style={{marginBottom:10}}>
+                  <div style={{fontSize:11,color:'var(--text-muted)',fontWeight:600}}>{l}</div>
+                  <div style={{fontSize:13,fontWeight:600}}>{v||'—'}</div>
+                </div>
+              ))}
+            </div>
+            <div>
+              {[['📦 Тип',found.type],['⚖️ Вес',found.weight],['📦 Объём',found.volume],['🔥 Приоритет',found.priority],['📅 Дедлайн',formatDate(found.deadline)]].map(([l,v])=>(
+                <div key={l} style={{marginBottom:10}}>
+                  <div style={{fontSize:11,color:'var(--text-muted)',fontWeight:600}}>{l}</div>
+                  <div style={{fontSize:13,fontWeight:600}}>{v||'—'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      {found.history && found.history.length>0 && <div className="card">
+        <div className="card-header"><span className="card-title">📜 История перемещений</span></div>
+        <div className="card-body">
+          <div className="timeline">
+            {found.history.map((h,i)=>(
+              <div key={i} className="timeline-item">
+                <div className="timeline-dot"/>
+                <div className="timeline-content"><span className={`badge ${STATUS_COLORS[h.status]}`}>{h.status}</span></div>
+                <div className="timeline-time">👤 {h.user} · {h.date}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>}
+    </div>}
+  </div>;
+}
+
+// ===================== EXCEL IMPORT =====================
+function ExcelImport({ currentUser, addLog, addToast }) {
+  const { setDocs } = React.useContext(AppCtx);
+  const [preview, setPreview] = useState(null);
+  const [fileName, setFileName] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [dragover, setDragover] = useState(false);
+  const [imported, setImported] = useState(0);
+  const fileRef = useRef();
+
+  const REQUIRED_COLS = ['Тип','Статус','Отправитель','Получатель','Маршрут'];
+  const COL_MAP = {
+    'тип':'type','type':'type','вид':'type',
+    'статус':'status','status':'status',
+    'отправитель':'sender','sender':'sender',
+    'получатель':'receiver','receiver':'receiver',
+    'маршрут':'route','route':'route',
+    'перевозчик':'carrier','carrier':'carrier',
+    'вес':'weight','weight':'weight',
+    'объём':'volume','volume':'volume','объем':'volume',
+    'сумма':'amount','amount':'amount','стоимость':'amount',
+    'дедлайн':'deadline','deadline':'deadline','срок':'deadline',
+    'описание':'description','description':'description',
+    'приоритет':'priority','priority':'priority',
+    'примечания':'notes','notes':'notes','комментарий':'notes',
+  };
+
+  const processFile = (file) => {
+    if(!file) return;
+    if(!file.name.match(/\.(xlsx|xls|csv)$/i)) { addToast('Поддерживаются только .xlsx, .xls, .csv файлы','error'); return; }
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
+        if(rows.length<2) { addToast('Файл пустой или некорректный','error'); return; }
+        const headers = rows[0].map(h=>String(h||'').trim());
+        const data = rows.slice(1).filter(r=>r.some(c=>c!=null&&c!==''));
+        setPreview({ headers, data, raw:rows });
+      } catch(err) { addToast('Ошибка чтения файла: '+err.message,'error'); }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleFile = (e) => processFile(e.target.files[0]);
+  const handleDrop = (e) => { e.preventDefault(); setDragover(false); processFile(e.dataTransfer.files[0]); };
+
+  const handleImport = () => {
+    if(!preview) return;
+    setImporting(true);
+    setTimeout(()=>{
+      const headers = preview.headers;
+      const newDocs = preview.data.map((row,i)=>{
+        const obj = {};
+        headers.forEach((h,j)=>{ const mapped=COL_MAP[h.toLowerCase()]; if(mapped) obj[mapped]=String(row[j]||''); });
+        // Валидация и дефолты
+        return {
+          id: genId(),
+          number: genDocNum(),
+          type: obj.type && DOC_TYPES.includes(obj.type) ? obj.type : DOC_TYPES[0],
+          status: obj.status && STATUSES.includes(obj.status) ? obj.status : 'Черновик',
+          priority: obj.priority && PRIORITIES.includes(obj.priority) ? obj.priority : 'Средний',
+          sender: obj.sender || COUNTERPARTIES[0],
+          receiver: obj.receiver || COUNTERPARTIES[1],
+          carrier: obj.carrier || COUNTERPARTIES[2],
+          route: obj.route || '',
+          weight: obj.weight ? obj.weight+' кг' : '',
+          volume: obj.volume ? obj.volume+' м³' : '',
+          amount: obj.amount || '0',
+          currency: 'RUB',
+          date: new Date().toISOString().split('T')[0],
+          deadline: obj.deadline || '',
+          description: obj.description || `Импортировано из Excel: строка ${i+2}`,
+          notes: obj.notes || '',
+          trackNumber: 'TRK'+String(Math.floor(Math.random()*999999)).padStart(6,'0'),
+          createdBy: currentUser.email,
+          attachments: [],
+          history: [{status:'Черновик',date:now(),user:currentUser.email}]
+        };
+      });
+      setDocs(ds=>[...newDocs,...ds]);
+      setImported(newDocs.length);
+      addLog(`Импорт из Excel: ${newDocs.length} документов из файла ${fileName}`, currentUser.email, currentUser.role, 'import');
+      addToast(`✅ Успешно импортировано ${newDocs.length} документов!`,'success');
+      setImporting(false);
+      setPreview(null);
+    }, 1200);
+  };
+
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['Тип','Статус','Приоритет','Отправитель','Получатель','Перевозчик','Маршрут','Вес','Объём','Сумма','Дедлайн','Описание'],
+      ['ТТН','В обработке','Средний','ООО "Транслогист"','АО "ГлобалКарго"','ИП Смирнов','Москва → Казань','1500','5.5','250000','2025-07-01','Товары нар. потребления'],
+      ['Счёт-фактура','Черновик','Высокий','ИП Смирнов Д.В.','ООО "БыстроДост"','ООО "Транслогист"','СПб → Новосибирск','800','3.2','180000','2025-07-15','Оборудование'],
+    ]);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Документы');
+    XLSX.writeFile(wb,'LogiDocs_Template.xlsx');
+    addToast('Шаблон скачан!','success');
+  };
+
+  return <div className="page-fade">
+    <div className="page-header"><h1>📥 Импорт из Excel</h1><p>Загрузите файл .xlsx, .xls или .csv для массового импорта документов</p></div>
+
+    <div className="grid-2" style={{marginBottom:24,gap:20}}>
+      <div className="card">
+        <div className="card-header"><span className="card-title">📤 Загрузка файла</span>
+          <button className="btn btn-secondary btn-sm" onClick={downloadTemplate}>⬇️ Скачать шаблон</button>
+        </div>
+        <div className="card-body">
+          <div className={`drop-zone ${dragover?'dragover':''}`}
+            onClick={()=>fileRef.current.click()}
+            onDragOver={e=>{e.preventDefault();setDragover(true);}}
+            onDragLeave={()=>setDragover(false)}
+            onDrop={handleDrop}>
+            <div className="drop-zone-icon">📊</div>
+            <h3>Перетащите файл сюда</h3>
+            <p>или нажмите для выбора файла</p>
+            <p style={{marginTop:8,fontSize:12,opacity:0.6}}>.xlsx · .xls · .csv</p>
+            {fileName && <div style={{marginTop:12,padding:'6px 12px',background:'var(--primary-light)',borderRadius:8,fontSize:13,color:'var(--primary)',fontWeight:600}}>📎 {fileName}</div>}
+          </div>
+          <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleFile}/>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header"><span className="card-title">ℹ️ Инструкция</span></div>
+        <div className="card-body">
+          <div style={{fontSize:13,color:'var(--text-muted)',lineHeight:1.8}}>
+            <p style={{marginBottom:8}}><strong style={{color:'var(--text)'}}>Поддерживаемые колонки:</strong></p>
+            {[['Тип','ТТН, Счёт-фактура, CMR...'],['Статус','Черновик, В обработке...'],['Приоритет','Низкий / Средний / Высокий'],['Отправитель','Название компании'],['Получатель','Название компании'],['Маршрут','Город А → Город Б'],['Вес','В килограммах'],['Объём','В кубометрах'],['Сумма','Числовое значение в рублях'],['Дедлайн','Дата в формате ГГГГ-ММ-ДД']].map(([k,v])=>(
+              <div key={k} style={{display:'flex',gap:8,marginBottom:4}}>
+                <span style={{fontWeight:700,color:'var(--text)',minWidth:100}}>{k}</span>
+                <span>{v}</span>
+              </div>
+            ))}
+            <div style={{marginTop:12,padding:10,background:'var(--primary-light)',borderRadius:8}}>
+              💡 Скачайте шаблон для быстрого старта. Колонки распознаются автоматически.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {preview && <div className="card" style={{marginBottom:20}}>
+      <div className="card-header">
+        <div>
+          <span className="card-title">👁️ Предпросмотр данных</span>
+          <span style={{marginLeft:12,fontSize:12,color:'var(--text-muted)'}}>Строк: {preview.data.length} · Колонок: {preview.headers.length}</span>
+        </div>
+        <div style={{display:'flex',gap:10}}>
+          <button className="btn btn-secondary btn-sm" onClick={()=>{setPreview(null);setFileName('');}}>✕ Отмена</button>
+          <button className="btn btn-primary" onClick={handleImport} disabled={importing}>
+            {importing?'⏳ Импорт...':'✅ Импортировать '+preview.data.length+' строк'}
+          </button>
+        </div>
+      </div>
+      <div className="card-body" style={{padding:0}}>
+        <div className="table-wrap" style={{maxHeight:350,overflow:'auto'}}>
+          <table>
+            <thead><tr>{preview.headers.map((h,i)=><th key={i}>{h}{COL_MAP[h.toLowerCase()]?<span style={{color:'var(--success)',marginLeft:4}}>✓</span>:<span style={{color:'var(--warning)',marginLeft:4}}>?</span>}</th>)}</tr></thead>
+            <tbody>
+              {preview.data.slice(0,20).map((row,i)=>(
+                <tr key={i}>{preview.headers.map((_,j)=><td key={j} style={{maxWidth:150,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row[j]??'—'}</td>)}</tr>
+              ))}
+              {preview.data.length>20 && <tr><td colSpan={preview.headers.length} style={{textAlign:'center',padding:12,color:'var(--text-muted)',fontSize:12}}>... и ещё {preview.data.length-20} строк</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>}
+
+    {imported>0 && !preview && <div style={{background:'#dcfce7',border:'1px solid #86efac',borderRadius:12,padding:20,display:'flex',alignItems:'center',gap:16}}>
+      <span style={{fontSize:32}}>✅</span>
+      <div>
+        <div style={{fontWeight:700,color:'#166534',fontSize:15}}>Импорт завершён успешно!</div>
+        <div style={{color:'#16a34a',fontSize:13}}>Загружено документов: <strong>{imported}</strong>. Перейдите в раздел Документы для просмотра.</div>
+      </div>
+    </div>}
+  </div>;
+}
+
+// ===================== USERS =====================
+function Users({ currentUser, addLog, addToast }) {
+  const { users, setUsers } = React.useContext(AppCtx);
+  const [showForm, setShowForm] = useState(false);
+  const [editUser, setEditUser] = useState(null);
+  const [viewUser, setViewUser] = useState(null);
+  const [search, setSearch] = useState('');
+  const [filterRole, setFilterRole] = useState('');
+
+  const filtered = users.filter(u=>{
+    const q = search.toLowerCase();
+    return (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)) &&
+           (!filterRole || u.role===filterRole);
+  });
+
+  const handleSave = (form) => {
+    if(form.id) {
+      setUsers(us=>us.map(u=>u.id===form.id?form:u));
+      addLog('Изменён пользователь '+form.email, currentUser.email, currentUser.role, 'edit');
+      addToast('Пользователь обновлён','success');
+    } else {
+      if(users.find(u=>u.email===form.email)) { addToast('Пользователь с таким email уже существует','error'); return; }
+      const newU = {...form, id:Date.now(), createdAt:new Date().toISOString().split('T')[0], lastLogin:'—', status:'active'};
+      setUsers(us=>[...us,newU]);
+      addLog('Создан пользователь '+form.email, currentUser.email, currentUser.role, 'create');
+      addToast('Пользователь создан!','success');
+    }
+    setShowForm(false); setEditUser(null);
+  };
+
+  const toggleBlock = (u) => {
+    const newStatus = u.status==='blocked'?'active':'blocked';
+    setUsers(us=>us.map(x=>x.id===u.id?{...x,status:newStatus}:x));
+    addLog(`Пользователь ${u.email} ${newStatus==='blocked'?'заблокирован':'разблокирован'}`, currentUser.email, currentUser.role, 'edit');
+    addToast(`Пользователь ${newStatus==='blocked'?'заблокирован':'разблокирован'}`,'warning');
+  };
+
+  const handleDelete = (u) => {
+    if(u.id===currentUser.id) { addToast('Нельзя удалить текущего пользователя','error'); return; }
+    if(!confirm(`Удалить пользователя ${u.name}?`)) return;
+    setUsers(us=>us.filter(x=>x.id!==u.id));
+    addLog('Удалён пользователь '+u.email, currentUser.email, currentUser.role, 'delete');
+    addToast('Пользователь удалён','success');
+  };
+
+  const resetPass = (u) => {
+    addLog(`Сброс пароля для ${u.email}`, currentUser.email, currentUser.role, 'edit');
+    addToast(`Пароль сброшен для ${u.email}`,'info');
+  };
+
+  return <div className="page-fade">
+    <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+      <div><h1>👥 Пользователи</h1><p>Управление учётными записями и правами доступа · {users.length} пользователей</p></div>
+      <button className="btn btn-primary" onClick={()=>{setEditUser(null);setShowForm(true);}}>➕ Добавить</button>
+    </div>
+
+    {/* Stats */}
+    <div className="stats-grid" style={{marginBottom:20}}>
+      {Object.entries(ROLES).map(([key,role])=>(
+        <div key={key} className="stat-card">
+          <div className="stat-icon" style={{background:'var(--primary-light)'}}><span style={{fontSize:22}}>{role.icon}</span></div>
+          <div className="stat-info">
+            <div className="stat-value">{users.filter(u=>u.role===key).length}</div>
+            <div className="stat-label">{role.label}</div>
+            <div className="stat-change up">{users.filter(u=>u.role===key&&u.status==='active').length} активных</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Filters */}
+    <div className="toolbar" style={{marginBottom:16}}>
+      <div className="search-box" style={{maxWidth:300}}>
+        <span className="search-icon">🔍</span>
+        <input placeholder="Поиск по имени или email..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      </div>
+      <select className="form-control" style={{width:'auto'}} value={filterRole} onChange={e=>setFilterRole(e.target.value)}>
+        <option value="">Все роли</option>
+        {Object.entries(ROLES).map(([k,r])=><option key={k} value={k}>{r.label}</option>)}
+      </select>
+    </div>
+
+    {/* User Cards */}
+    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
+      {filtered.map(u=>(
+        <div key={u.id} className="user-card">
+          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:-8}}>
+            <span className={`badge ${u.status==='active'?'badge-success':'badge-danger'}`}>{u.status==='active'?'Активен':'Заблокирован'}</span>
+          </div>
+          <div className="user-avatar-lg" style={{background:u.color}}>{u.avatar}</div>
+          <div className="user-card-name">{u.name}</div>
+          <div className="user-card-email">{u.email}</div>
+          <div className="user-card-role"><span className={`badge ${ROLES[u.role]?.color}`}>{ROLES[u.role]?.icon} {ROLES[u.role]?.label}</span></div>
+          <div style={{fontSize:11,color:'var(--text-muted)',marginTop:6}}>🏢 {u.department} · 📅 {u.lastLogin}</div>
+          <div className="user-card-actions">
+            <button className="btn btn-secondary btn-sm" onClick={()=>setViewUser(u)}>👁</button>
+            <button className="btn btn-secondary btn-sm" onClick={()=>{setEditUser(u);setShowForm(true);}}>✏️</button>
+            <button className={`btn btn-sm ${u.status==='active'?'btn-warning':'btn-success'}`} onClick={()=>toggleBlock(u)}>{u.status==='active'?'🔒':'🔓'}</button>
+            <button className="btn btn-secondary btn-sm" onClick={()=>resetPass(u)} title="Сбросить пароль">🔑</button>
+            {u.id!==currentUser.id && <button className="btn btn-danger btn-sm" onClick={()=>handleDelete(u)}>🗑</button>}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {showForm && <UserFormModal user={editUser} onSave={handleSave} onClose={()=>{setShowForm(false);setEditUser(null);}}/>}
+    {viewUser && <UserViewModal user={viewUser} onClose={()=>setViewUser(null)}/>}
+  </div>;
+}
+
+function UserFormModal({ user, onSave, onClose }) {
+  const [form, setForm] = useState(user ? {...user} : {
+    name:'', email:'', password:'', role:'operator', department:'', phone:'', avatar:'👤', color:'#2563eb', status:'active'
+  });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const COLORS = ['#2563eb','#7c3aed','#16a34a','#d97706','#dc2626','#0891b2','#ec4899','#64748b'];
+  const AVATARS = ['👤','👨‍💼','👩‍💼','👷','👨‍💻','👩‍💻','🧑‍🔬','👨‍🏫'];
+
+  return <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal modal-md">
+      <div className="modal-header">
+        <h3>{user?'✏️ Редактировать пользователя':'➕ Новый пользователь'}</h3>
+        <button className="close-btn" onClick={onClose}>×</button>
+      </div>
+      <div className="modal-body">
+        <div style={{display:'flex',gap:16,marginBottom:20,alignItems:'center',padding:16,background:'var(--bg)',borderRadius:12}}>
+          <div style={{width:60,height:60,borderRadius:'50%',background:form.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>{form.avatar}</div>
+          <div style={{flex:1}}>
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Аватар:</div>
+              <div style={{display:'flex',gap:8}}>
+                {AVATARS.map(a=><span key={a} style={{cursor:'pointer',fontSize:20,opacity:form.avatar===a?1:0.4,border:form.avatar===a?'2px solid var(--primary)':'2px solid transparent',borderRadius:6,padding:2}} onClick={()=>set('avatar',a)}>{a}</span>)}
+              </div>
+            </div>
+            <div>
+              <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Цвет:</div>
+              <div style={{display:'flex',gap:8}}>
+                {COLORS.map(c=><div key={c} style={{width:24,height:24,borderRadius:'50%',background:c,cursor:'pointer',border:form.color===c?'3px solid var(--text)':'3px solid transparent'}} onClick={()=>set('color',c)}/>)}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label required">ФИО</label>
+            <input className="form-control" value={form.name} onChange={e=>set('name',e.target.value)} placeholder="Иванов Иван Иванович"/>
+          </div>
+          <div className="form-group">
+            <label className="form-label required">Email</label>
+            <input className="form-control" type="email" value={form.email} onChange={e=>set('email',e.target.value)} placeholder="user@company.ru"/>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label required">Пароль {user&&'(оставьте пустым чтобы не менять)'}</label>
+            <input className="form-control" type="password" value={form.password} onChange={e=>set('password',e.target.value)} placeholder="••••••••"/>
+          </div>
+          <div className="form-group">
+            <label className="form-label required">Роль</label>
+            <select className="form-control" value={form.role} onChange={e=>set('role',e.target.value)}>
+              {Object.entries(ROLES).map(([k,r])=><option key={k} value={k}>{r.icon} {r.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Отдел</label>
+            <input className="form-control" value={form.department} onChange={e=>set('department',e.target.value)} placeholder="Логистика"/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Телефон</label>
+            <input className="form-control" value={form.phone} onChange={e=>set('phone',e.target.value)} placeholder="+7 (999) 000-00-00"/>
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Статус</label>
+          <select className="form-control" value={form.status} onChange={e=>set('status',e.target.value)}>
+            <option value="active">✅ Активен</option>
+            <option value="blocked">🔒 Заблокирован</option>
+          </select>
+        </div>
+        <div style={{padding:12,background:'var(--primary-light)',borderRadius:10,fontSize:12,color:'var(--text-muted)'}}>
+          <strong style={{color:'var(--text)'}}>🔑 Права доступа для роли "{ROLES[form.role]?.label}":</strong>
+          <div style={{marginTop:4}}>{form.role==='admin'?'Полный доступ ко всем функциям системы':form.role==='manager'?'Просмотр, создание и редактирование документов':form.role==='operator'?'Просмотр и создание документов':'Только просмотр документов'}</div>
+        </div>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={onClose}>Отмена</button>
+        <button className="btn btn-primary" onClick={()=>{if(!form.name||!form.email||(!user&&!form.password)){alert('Заполните обязательные поля');return;}onSave(form);}}>💾 Сохранить</button>
+      </div>
+    </div>
+  </div>;
+}
+
+function UserViewModal({ user, onClose }) {
+  return <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal modal-sm">
+      <div className="modal-header"><h3>👤 Профиль пользователя</h3><button className="close-btn" onClick={onClose}>×</button></div>
+      <div className="modal-body" style={{textAlign:'center'}}>
+        <div style={{width:80,height:80,borderRadius:'50%',background:user.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:34,margin:'0 auto 16px'}}>{user.avatar}</div>
+        <div style={{fontSize:18,fontWeight:800}}>{user.name}</div>
+        <div style={{color:'var(--text-muted)',fontSize:13,marginTop:4}}>{user.email}</div>
+        <div style={{marginTop:10}}><span className={`badge ${ROLES[user.role]?.color}`}>{ROLES[user.role]?.icon} {ROLES[user.role]?.label}</span></div>
+        <div style={{marginTop:10}}><span className={`badge ${user.status==='active'?'badge-success':'badge-danger'}`}>{user.status==='active'?'✅ Активен':'🔒 Заблокирован'}</span></div>
+        <div className="divider"/>
+        {[['🏢 Отдел',user.department],['📞 Телефон',user.phone],['📅 Дата создания',formatDate(user.createdAt)],['🕐 Последний вход',user.lastLogin]].map(([l,v])=>v&&(
+          <div key={l} style={{display:'flex',justifyContent:'space-between',fontSize:13,padding:'4px 0'}}>
+            <span style={{color:'var(--text-muted)'}}>{l}</span>
+            <span style={{fontWeight:600}}>{v}</span>
+          </div>
+        ))}
+        <div className="divider"/>
+        <div style={{textAlign:'left'}}>
+          <div style={{fontSize:12,fontWeight:700,marginBottom:8}}>🔑 Права доступа:</div>
+          {['Просмотр документов','Создание документов','Редактирование','Удаление','Управление пользователями','Журнал событий'].map((p,i)=>{
+            const hasAccess = user.role==='admin'||(user.role==='manager'&&i<3)||(user.role==='operator'&&i<2)||(user.role==='viewer'&&i<1);
+            return <div key={p} style={{display:'flex',alignItems:'center',gap:8,fontSize:12,padding:'3px 0'}}>
+              <span style={{color:hasAccess?'var(--success)':'var(--danger)'}}>{hasAccess?'✅':'❌'}</span>
+              <span>{p}</span>
+            </div>;
+          })}
+        </div>
+      </div>
+      <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Закрыть</button></div>
+    </div>
+  </div>;
+}
+
+// ===================== LOGS =====================
+function Logs({ currentUser }) {
+  const { logs } = React.useContext(AppCtx);
+  const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterUser, setFilterUser] = useState('');
+  const [page, setPage2] = useState(1);
+  const PER = 15;
+
+  const LOG_TYPES = {
+    auth:   { label:'Авторизация', color:'#16a34a', icon:'🔑', badge:'badge-success' },
+    create: { label:'Создание',    color:'#2563eb', icon:'➕', badge:'badge-info' },
+    edit:   { label:'Изменение',   color:'#d97706', icon:'✏️', badge:'badge-warning' },
+    delete: { label:'Удаление',    color:'#dc2626', icon:'🗑', badge:'badge-danger' },
+    import: { label:'Импорт',      color:'#7c3aed', icon:'📥', badge:'badge-purple' },
+    export: { label:'Экспорт',     color:'#0891b2', icon:'📤', badge:'badge-info' },
+  };
+
+  const filtered = logs.filter(l=>{
+    const q=search.toLowerCase();
+    return (!q||l.action.toLowerCase().includes(q)||l.user.toLowerCase().includes(q)||l.details.toLowerCase().includes(q))
+      &&(!filterType||l.type===filterType)&&(!filterUser||l.user===filterUser);
+  });
+
+  const pages=Math.ceil(filtered.length/PER);
+  const paged=filtered.slice((page-1)*PER,page*PER);
+  const uniqueUsers=[...new Set(logs.map(l=>l.user))];
+
+  const exportLogs = () => {
+    const rows=[['ID','Действие','Пользователь','Роль','IP','Время','Тип','Детали'],...filtered.map(l=>[l.id,l.action,l.user,l.role,l.ip,l.time,l.type,l.details])];
+    const csv=rows.map(r=>r.join(';')).join('\n');
+    const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv); a.download='audit_log.csv'; a.click();
+  };
+
+  return <div className="page-fade">
+    <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+      <div><h1>📋 Журнал событий</h1><p>Полная история действий в системе · {logs.length} записей</p></div>
+      <button className="btn btn-secondary" onClick={exportLogs}>⬇️ Экспорт</button>
+    </div>
+
+    {/* Stat cards */}
+    <div style={{display:'flex',gap:12,marginBottom:20,flexWrap:'wrap'}}>
+      {Object.entries(LOG_TYPES).map(([k,v])=>(
+        <div key={k} style={{background:'var(--card-bg)',border:'1px solid var(--border)',borderRadius:10,padding:'10px 16px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',boxShadow:'var(--shadow)'}} onClick={()=>setFilterType(filterType===k?'':k)}>
+          <span style={{fontSize:18}}>{v.icon}</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{logs.filter(l=>l.type===k).length}</div>
+            <div style={{fontSize:11,color:'var(--text-muted)'}}>{v.label}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="card">
+      <div className="card-body" style={{paddingBottom:8}}>
+        <div className="toolbar">
+          <div className="search-box">
+            <span className="search-icon">🔍</span>
+            <input placeholder="Поиск по действию, пользователю, деталям..." value={search} onChange={e=>{setSearch(e.target.value);setPage2(1);}}/>
+          </div>
+          <select className="form-control" style={{width:'auto'}} value={filterType} onChange={e=>{setFilterType(e.target.value);setPage2(1);}}>
+            <option value="">Все типы</option>
+            {Object.entries(LOG_TYPES).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
+          </select>
+          <select className="form-control" style={{width:'auto'}} value={filterUser} onChange={e=>{setFilterUser(e.target.value);setPage2(1);}}>
+            <option value="">Все пользователи</option>
+            {uniqueUsers.map(u=><option key={u}>{u}</option>)}
+          </select>
+          {(search||filterType||filterUser)&&<button className="btn btn-secondary btn-sm" onClick={()=>{setSearch('');setFilterType('');setFilterUser('');}}>✕ Сбросить</button>}
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Тип</th><th>Действие</th><th>Пользователь</th><th>Роль</th><th>IP адрес</th><th>Время</th><th>Детали</th></tr></thead>
+            <tbody>
+              {paged.length===0&&<tr><td colSpan={8}><div className="empty-state"><div className="empty-state-icon">📋</div><h3>Событий не найдено</h3></div></td></tr>}
+              {paged.map(l=>(
+                <tr key={l.id}>
+                  <td style={{color:'var(--text-muted)',fontSize:11}}>#{l.id}</td>
+                  <td><span className={`badge ${LOG_TYPES[l.type]?.badge}`}>{LOG_TYPES[l.type]?.icon} {LOG_TYPES[l.type]?.label}</span></td>
+                  <td style={{fontWeight:500}}>{l.action}</td>
+                  <td><div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:24,height:24,borderRadius:'50%',background:'var(--primary)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,color:'#fff',fontWeight:700}}>{l.user[0].toUpperCase()}</div>{l.user}</div></td>
+                  <td><span className={`badge ${ROLES[l.role]?.color}`}>{ROLES[l.role]?.label||l.role}</span></td>
+                  <td style={{fontSize:12,color:'var(--text-muted)',fontFamily:'monospace'}}>{l.ip}</td>
+                  <td style={{fontSize:12,color:'var(--text-muted)',whiteSpace:'nowrap'}}>{l.time}</td>
+                  <td style={{fontSize:12,color:'var(--text-muted)',maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.details}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {pages>1&&<div style={{display:'flex',gap:6,justifyContent:'center',padding:'16px 0',flexWrap:'wrap'}}>
+          {Array.from({length:pages},(_,i)=><button key={i} className={`btn btn-sm ${page===i+1?'btn-primary':'btn-secondary'}`} onClick={()=>setPage2(i+1)}>{i+1}</button>)}
+        </div>}
+      </div>
+    </div>
+  </div>;
+}
+
+// ===================== REPORTS =====================
+function Reports({ currentUser, addLog }) {
+  const { docs } = React.useContext(AppCtx);
+  const [period, setPeriod] = useState('month');
+  const [tab, setTab] = useState(0);
+
+  const COLORS = ['#2563eb','#7c3aed','#16a34a','#d97706','#dc2626','#0891b2','#ec4899','#84cc16','#f97316','#14b8a6'];
+
+  const typeStats = DOC_TYPES.map((t,i)=>({ label:t, count:docs.filter(d=>d.type===t).length, color:COLORS[i%COLORS.length], amount:docs.filter(d=>d.type===t).reduce((s,d)=>s+Number(d.amount||0),0) })).sort((a,b)=>b.count-a.count);
+  const statusStats = STATUSES.map((s,i)=>({ label:s, count:docs.filter(d=>d.status===s).length, color:COLORS[i%COLORS.length] })).filter(x=>x.count>0);
+  const priorityStats = PRIORITIES.map((p,i)=>({ label:p, count:docs.filter(d=>d.priority===p).length, color:['#64748b','#0891b2','#d97706','#dc2626'][i] }));
+  const maxCount=Math.max(...typeStats.map(t=>t.count),1);
+
+  const totalAmount=docs.reduce((s,d)=>s+Number(d.amount||0),0);
+  const avgAmount=docs.length?totalAmount/docs.length:0;
+
+  const handleExport = () => {
+    const rows=[['Тип документа','Количество','Сумма (₽)'],...typeStats.map(t=>[t.label,t.count,t.amount])];
+    const csv=rows.map(r=>r.join(';')).join('\n');
+    const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv); a.download='report.csv'; a.click();
+    addLog('Экспорт отчёта в CSV', currentUser.email, currentUser.role, 'export');
+  };
+
+  return <div className="page-fade">
+    <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+      <div><h1>📈 Отчёты и аналитика</h1><p>Сводная статистика за выбранный период</p></div>
+      <div style={{display:'flex',gap:10}}>
+        <select className="form-control" style={{width:'auto'}} value={period} onChange={e=>setPeriod(e.target.value)}>
+          <option value="week">За неделю</option>
+          <option value="month">За месяц</option>
+          <option value="quarter">За квартал</option>
+          <option value="year">За год</option>
+        </select>
+        <button className="btn btn-primary" onClick={handleExport}>⬇️ Экспорт CSV</button>
+      </div>
+    </div>
+
+    {/* KPI */}
+    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:16,marginBottom:24}}>
+      {[
+        {icon:'💰',label:'Общий оборот',value:formatMoney(totalAmount),color:'#dcfce7',ic:'#16a34a'},
+        {icon:'📊',label:'Средний чек',value:formatMoney(avgAmount),color:'#eff6ff',ic:'#2563eb'},
+        {icon:'✅',label:'Выполнено',value:docs.filter(d=>d.status==='Доставлен'||d.status==='Подписан').length,color:'#dcfce7',ic:'#16a34a'},
+        {icon:'⚠️',label:'Просрочено',value:docs.filter(d=>d.status!=='Доставлен'&&d.status!=='Подписан'&&d.status!=='Отменён'&&new Date(d.deadline)<new Date()).length,color:'#fee2e2',ic:'#dc2626'},
+        {icon:'📦',label:'Кол-во документов',value:docs.length,color:'#ede9fe',ic:'#7c3aed'},
+        {icon:'🔥',label:'Критических',value:docs.filter(d=>d.priority==='Критический').length,color:'#fff7ed',ic:'#ea580c'},
+      ].map((s,i)=>(
+        <div key={i} className="stat-card">
+          <div className="stat-icon" style={{background:s.color}}><span style={{fontSize:22}}>{s.icon}</span></div>
+          <div className="stat-info">
+            <div className="stat-value" style={{fontSize:20}}>{s.value}</div>
+            <div className="stat-label">{s.label}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="tabs">
+      {['По типам','По статусам','По приоритетам','Сводная таблица'].map((t,i)=>(
+        <button key={i} className={`tab ${tab===i?'active':''}`} onClick={()=>setTab(i)}>{t}</button>
+      ))}
+    </div>
+
+    {tab===0 && <div className="card">
+      <div className="card-header"><span className="card-title">📊 Распределение по типам документов</span></div>
+      <div className="card-body">
+        <div className="chart-bar-wrap">
+          {typeStats.map((t)=>(
+            <div key={t.label} className="chart-bar-item">
+              <div className="chart-bar-label">{t.label}</div>
+              <div className="chart-bar-track">
+                <div className="chart-bar-fill" style={{width:`${(t.count/maxCount)*100}%`,background:t.color}}>{t.count>0?t.count:''}</div>
+              </div>
+              <div className="chart-bar-value">{t.count}</div>
+              <div style={{fontSize:12,color:'var(--text-muted)',minWidth:100,textAlign:'right'}}>{formatMoney(t.amount)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>}
+
+    {tab===1 && <div className="card">
+      <div className="card-header"><span className="card-title">📉 Распределение по статусам</span></div>
+      <div className="card-body">
+        <div className="donut-wrap">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            {(()=>{
+              const total2=statusStats.reduce((a,b)=>a+b.count,0)||1;
+              let cum=-Math.PI/2;
+              return statusStats.map((item,i)=>{
+                const angle=(item.count/total2)*2*Math.PI;
+                const x1=80+70*Math.cos(cum), y1=80+70*Math.sin(cum);
+                cum+=angle;
+                const x2=80+70*Math.cos(cum), y2=80+70*Math.sin(cum);
+                const large=angle>Math.PI?1:0;
+                return <path key={i} d={`M80,80 L${x1},${y1} A70,70 0 ${large},1 ${x2},${y2} Z`} fill={item.color} opacity="0.85"/>;
+              });
+            })()}
+            <circle cx="80" cy="80" r="45" fill="var(--card-bg)"/>
+            <text x="80" y="76" textAnchor="middle" fontSize="14" fontWeight="800" fill="var(--text)">{docs.length}</text>
+            <text x="80" y="90" textAnchor="middle" fontSize="10" fill="var(--text-muted)">документов</text>
+          </svg>
+          <div className="donut-legend" style={{flex:1}}>
+            {statusStats.map(s=>(
+              <div key={s.label} className="donut-legend-item">
+                <div className="donut-dot" style={{background:s.color}}/>
+                <span className="donut-legend-label">{s.label}</span>
+                <span className="donut-legend-val">{s.count} ({Math.round(s.count/docs.length*100)}%)</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {tab===2 && <div className="card">
+      <div className="card-header"><span className="card-title">🔥 Распределение по приоритетам</span></div>
+      <div className="card-body">
+        <div className="chart-bar-wrap">
+          {priorityStats.map(p=>(
+            <div key={p.label} className="chart-bar-item">
+              <div className="chart-bar-label">{p.label}</div>
+              <div className="chart-bar-track">
+                <div className="chart-bar-fill" style={{width:`${docs.length?(p.count/docs.length)*100:0}%`,background:p.color}}>{p.count>0?p.count:''}</div>
+              </div>
+              <div className="chart-bar-value">{p.count}</div>
+              <div style={{fontSize:12,color:'var(--text-muted)',minWidth:60,textAlign:'right'}}>{docs.length?Math.round(p.count/docs.length*100):0}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>}
+
+    {tab===3 && <div className="card">
+      <div className="card-header"><span className="card-title">📋 Сводная таблица</span></div>
+      <div className="card-body" style={{padding:0}}>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Тип документа</th>{STATUSES.map(s=><th key={s}>{s}</th>)}<th>Итого</th><th>Сумма</th></tr></thead>
+            <tbody>
+              {typeStats.map(t=>(
+                <tr key={t.label}>
+                  <td><span style={{fontWeight:600}}>{t.label}</span></td>
+                  {STATUSES.map(s=>{
+                    const cnt=docs.filter(d=>d.type===t.label&&d.status===s).length;
+                    return <td key={s} style={{textAlign:'center'}}>{cnt||<span style={{color:'var(--border)'}}>—</span>}</td>;
+                  })}
+                  <td style={{fontWeight:700,color:'var(--primary)'}}>{t.count}</td>
+                  <td style={{fontWeight:600}}>{formatMoney(t.amount)}</td>
+                </tr>
+              ))}
+              <tr style={{background:'var(--bg)',fontWeight:700}}>
+                <td>ИТОГО</td>
+                {STATUSES.map(s=><td key={s} style={{textAlign:'center',fontWeight:700}}>{docs.filter(d=>d.status===s).length}</td>)}
+                <td style={{color:'var(--primary)'}}>{docs.length}</td>
+                <td>{formatMoney(totalAmount)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
+
+// ===================== CALENDAR =====================
+function Calendar() {
+  const { docs } = React.useContext(AppCtx);
+  const [cur, setCur] = useState(new Date());
+  const [selected, setSelected] = useState(null);
+
+  const year=cur.getFullYear(), month=cur.getMonth();
+  const firstDay=new Date(year,month,1).getDay()||7;
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const dayNames=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+  const getDocsForDay=(d)=>{
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    return docs.filter(doc=>doc.date===dateStr||doc.deadline===dateStr);
+  };
+
+  const prevMonth=()=>setCur(new Date(year,month-1,1));
+  const nextMonth=()=>setCur(new Date(year,month+1,1));
+
+  const selDocs = selected ? getDocsForDay(selected) : [];
+
+  return <div className="page-fade">
+    <div className="page-header"><h1>📅 Календарь событий</h1><p>Просмотр документов по датам создания и дедлайнам</p></div>
+    <div className="grid-2">
+      <div className="card">
+        <div className="card-header">
+          <button className="btn btn-secondary btn-sm" onClick={prevMonth}>← Пред</button>
+          <span className="card-title">{monthNames[month]} {year}</span>
+          <button className="btn btn-secondary btn-sm" onClick={nextMonth}>След →</button>
+        </div>
+        <div className="card-body">
+          <div className="calendar-grid" style={{marginBottom:12}}>
+            {dayNames.map(d=><div key={d} className="cal-day-name">{d}</div>)}
+          </div>
+          <div className="calendar-grid">
+            {Array.from({length:firstDay-1},(_,i)=>(
+              <div key={'prev'+i} className="cal-day other-month"/>
+            ))}
+            {Array.from({length:daysInMonth},(_,i)=>{
+              const d=i+1;
+              const dayDocs=getDocsForDay(d);
+              const today=new Date();
+              const isToday=d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+              const isSel=d===selected;
+              return <div key={d} className={`cal-day ${isToday?'today':''} ${isSel&&!isToday?'':''}${dayDocs.length>0?'has-event':''}`}
+                style={{background:isSel&&!isToday?'var(--primary-light)':''}}
+                onClick={()=>setSelected(d)}>
+                {d}
+                {dayDocs.length>0&&!isToday&&<div style={{width:6,height:6,borderRadius:'50%',background:'var(--warning)',marginTop:2}}/>}
+              </div>;
+            })}
+          </div>
+        </div>
+        <div style={{padding:'0 20px 16px',fontSize:12,color:'var(--text-muted)',display:'flex',gap:16}}>
+          <span><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'var(--primary)',marginRight:4}}/>Сегодня</span>
+          <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'var(--warning)',marginRight:4}}/>Есть документы</span>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header"><span className="card-title">{selected?`📋 Документы: ${String(selected).padStart(2,'0')}.${String(month+1).padStart(2,'0')}.${year}`:'📋 Выберите дату'}</span></div>
+        <div className="card-body">
+          {!selected && <div className="empty-state"><div className="empty-state-icon">📅</div><h3>Нажмите на дату</h3><p>чтобы увидеть документы</p></div>}
+          {selected && selDocs.length===0 && <div className="empty-state"><div className="empty-state-icon">📭</div><h3>Нет документов</h3><p>На эту дату документов нет</p></div>}
+          {selDocs.map(d=>(
+            <div key={d.id} style={{padding:12,borderRadius:10,border:'1px solid var(--border)',marginBottom:10,background:'var(--bg)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                <span style={{fontWeight:700,color:'var(--primary)',fontSize:13}}>{d.number}</span>
+                <span className={`badge ${STATUS_COLORS[d.status]}`}>{d.status}</span>
+              </div>
+              <div style={{fontSize:12,color:'var(--text-muted)'}}>{d.type} · {d.route||'—'}</div>
+              <div style={{fontSize:11,color:'var(--text-muted)',marginTop:4}}>
+                {d.date===`${year}-${String(month+1).padStart(2,'0')}-${String(selected).padStart(2,'0')}`?'📅 Дата создания':'⚠️ Дедлайн'}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ===================== COUNTERPARTIES =====================
+function Counterparties() {
+  const { docs } = React.useContext(AppCtx);
+  const [search, setSearch] = useState('');
+  const CP_DATA = COUNTERPARTIES.map((name,i)=>({
+    id:i+1, name, type:['Отправитель','Перевозчик','Получатель'][i%3],
+    phone:`+7 (${800+i*11}) ${String(i*111+100).slice(0,3)}-${String(i*22+10).slice(0,2)}-${String(i*33+10).slice(0,2)}`,
+    email:`info@${name.replace(/[^а-яa-z]/gi,'').toLowerCase().slice(0,8)}.ru`,
+    city:['Москва','Санкт-Петербург','Новосибирск','Казань','Екатеринбург','Ростов'][i],
+    inn:`${7700000000+i*1111111}`,
+    docs:docs.filter(d=>d.sender===name||d.receiver===name||d.carrier===name).length,
+    color:['#2563eb','#7c3aed','#16a34a','#d97706','#dc2626','#0891b2'][i],
+  }));
+  const filtered=CP_DATA.filter(c=>!search||c.name.toLowerCase().includes(search.toLowerCase())||c.city.toLowerCase().includes(search.toLowerCase()));
+
+  return <div className="page-fade">
+    <div className="page-header"><h1>🏢 Контрагенты</h1><p>Справочник организаций и партнёров</p></div>
+    <div className="toolbar" style={{marginBottom:20}}>
+      <div className="search-box" style={{maxWidth:300}}>
+        <span className="search-icon">🔍</span>
+        <input placeholder="Поиск по названию или городу..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      </div>
+    </div>
+    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:16}}>
+      {filtered.map(c=>(
+        <div key={c.id} className="card" style={{padding:20}}>
+          <div style={{display:'flex',gap:14,marginBottom:14}}>
+            <div style={{width:52,height:52,borderRadius:14,background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,color:'#fff',flexShrink:0}}>🏢</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:700,fontSize:14,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</div>
+              <div style={{fontSize:12,color:'var(--text-muted)',marginTop:2}}>{c.city}</div>
+              <span className={`badge ${c.type==='Отправитель'?'badge-info':c.type==='Перевозчик'?'badge-purple':'badge-success'}`} style={{marginTop:4}}>{c.type}</span>
+            </div>
+          </div>
+          <div className="divider"/>
+          {[['📞',c.phone],['📧',c.email],['🆔 ИНН',c.inn],['📄',`${c.docs} документов`]].map(([l,v])=>(
+            <div key={l} style={{display:'flex',justifyContent:'space-between',fontSize:12,padding:'3px 0'}}>
+              <span style={{color:'var(--text-muted)'}}>{l}</span>
+              <span style={{fontWeight:600}}>{v}</span>
+            </div>
+          ))}
+          <div style={{marginTop:12,background:'var(--bg)',borderRadius:8,padding:8}}>
+            <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:4}}>Активность документов</div>
+            <div className="progress-bar"><div className="progress-fill" style={{width:`${Math.min(100,(c.docs/docs.length)*300)}%`,background:c.color}}/></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>;
+}
+
+// ===================== SETTINGS =====================
+function Settings({ currentUser, addToast }) {
+  const { dark, setDark } = React.useContext(AppCtx);
+  const [org, setOrg] = useState({ name:'ООО "ЛогиДокс"', inn:'7700000001', kpp:'770001001', address:'г. Москва, ул. Логистическая, д.1', phone:'+7 (495) 000-00-00', email:'info@logidocs.ru', director:'Иванов И.И.' });
+  const setO=(k,v)=>setOrg(o=>({...o,[k]:v}));
+
+  return <div className="page-fade">
+    <div className="page-header"><h1>⚙️ Настройки системы</h1><p>Конфигурация организации и системные параметры</p></div>
+    <div className="grid-2">
+      <div>
+        <div className="card" style={{marginBottom:20}}>
+          <div className="card-header"><span className="card-title">🏢 Реквизиты организации</span></div>
+          <div className="card-body">
+            {[['name','Название организации'],['inn','ИНН'],['kpp','КПП'],['address','Адрес'],['phone','Телефон'],['email','Email'],['director','Директор']].map(([k,l])=>(
+              <div key={k} className="form-group">
+                <label className="form-label">{l}</label>
+                <input className="form-control" value={org[k]} onChange={e=>setO(k,e.target.value)}/>
+              </div>
+            ))}
+            <button className="btn btn-primary w-full" onClick={()=>addToast('Реквизиты сохранены!','success')}>💾 Сохранить</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="card" style={{marginBottom:16}}>
+          <div className="card-header"><span className="card-title">🎨 Внешний вид</span></div>
+          <div className="card-body">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+              <div><div style={{fontWeight:600,fontSize:13}}>Тёмная тема</div><div style={{fontSize:12,color:'var(--text-muted)'}}>Переключить оформление</div></div>
+              <label className="switch"><input type="checkbox" checked={dark} onChange={e=>setDark(e.target.checked)}/><span className="slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div className="card" style={{marginBottom:16}}>
+          <div className="card-header"><span className="card-title">👤 Мой профиль</span></div>
+          <div className="card-body">
+            <div style={{display:'flex',gap:16,alignItems:'center',marginBottom:16}}>
+              <div style={{width:60,height:60,borderRadius:'50%',background:currentUser.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>{currentUser.avatar}</div>
+              <div>
+                <div style={{fontWeight:700,fontSize:15}}>{currentUser.name}</div>
+                <div style={{color:'var(--text-muted)',fontSize:13}}>{currentUser.email}</div>
+                <div className="mt-1"><span className={`badge ${ROLES[currentUser.role]?.color}`}>{ROLES[currentUser.role]?.icon} {ROLES[currentUser.role]?.label}</span></div>
+              </div>
+            </div>
+            {[['Отдел',currentUser.department],['Телефон',currentUser.phone],['Дата регистрации',currentUser.createdAt],['Последний вход',currentUser.lastLogin]].map(([l,v])=>v&&(
+              <div key={l} style={{display:'flex',justifyContent:'space-between',fontSize:13,padding:'4px 0',borderBottom:'1px solid var(--border)'}}>
+                <span style={{color:'var(--text-muted)'}}>{l}</span><span style={{fontWeight:600}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-header"><span className="card-title">📊 Информация о системе</span></div>
+          <div className="card-body">
+            {[['Версия','2.0 Pro'],['База данных','In-Memory'],['Последнее обновление','10.06.2025'],['Лицензия','Enterprise']].map(([l,v])=>(
+              <div key={l} style={{display:'flex',justifyContent:'space-between',fontSize:13,padding:'5px 0',borderBottom:'1px solid var(--border)'}}>
+                <span style={{color:'var(--text-muted)'}}>{l}</span><span style={{fontWeight:600}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ===================== APP ROOT =====================
+function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [page, setPage] = useState('dashboard');
+  const [collapsed, setCollapsed] = useState(false);
+  const [dark, setDark] = useState(false);
+  const [docs, setDocs] = useState(DOCS_INIT);
+  const [users, setUsers] = useState(USERS_INIT);
+  const [logs, setLogs] = useState(LOGS_INIT);
+  const [notifs, setNotifs] = useState(NOTIFS_INIT);
+  const [toasts, setToasts] = useState([]);
+
+  useEffect(()=>{
+    document.documentElement.className = dark ? 'dark' : '';
+  },[dark]);
+
+  const addToast = (text, type='info') => {
+    const id = Date.now();
+    setToasts(t=>[...t,{id,text,type}]);
+    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),4000);
+  };
+
+  const removeToast = id => setToasts(t=>t.filter(x=>x.id!==id));
+
+  const addLog = (action, user, role, type, details='') => {
+    const newLog = {
+      id: genLogId(), action, user, role, type,
+      ip:`192.168.${Math.floor(Math.random()*5)}.${Math.floor(Math.random()*50)+1}`,
+      time: now(),
+      details: details||action
+    };
+    setLogs(ls=>[newLog,...ls]);
+  };
+
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+    addLog('Вход в систему', user.email, user.role, 'auth', 'Успешная авторизация');
+    addToast(`Добро пожаловать, ${user.name}!`,'success');
+  };
+
+  const handleLogout = () => {
+    addLog('Выход из системы', currentUser.email, currentUser.role, 'auth', 'Пользователь вышел');
+    setCurrentUser(null);
+    setPage('dashboard');
+  };
+
+  if(!currentUser) return <LoginPage onLogin={handleLogin}/>;
+
+  const ctx = { docs, setDocs, users, setUsers, logs, setLogs, notifs, setNotifs, dark, setDark };
+
+  const renderPage = () => {
+    const props = { currentUser, addLog, addToast };
+    switch(page) {
+      case 'dashboard':       return <Dashboard setPage={setPage}/>;
+      case 'documents':       return <Documents {...props}/>;
+      case 'kanban':          return <Kanban {...props}/>;
+      case 'tracking':        return <Tracking/>;
+      case 'import':          return <ExcelImport {...props}/>;
+      case 'counterparties':  return <Counterparties/>;
+      case 'calendar':        return <Calendar/>;
+      case 'reports':         return <Reports {...props}/>;
+      case 'users':           return currentUser.role==='admin'?<Users {...props}/>:<div className="page-fade"><div className="empty-state"><div className="empty-state-icon">🔒</div><h3>Нет доступа</h3><p>Этот раздел доступен только администраторам</p></div></div>;
+      case 'logs':            return currentUser.role==='admin'?<Logs {...props}/>:<div className="page-fade"><div className="empty-state"><div className="empty-state-icon">🔒</div><h3>Нет доступа</h3></div></div>;
+      case 'settings':        return <Settings {...props}/>;
+      default:                return <Dashboard setPage={setPage}/>;
+    }
+  };
+
+  return <AppCtx.Provider value={ctx}>
+    <div className="app-layout">
+      <Sidebar page={page} setPage={setPage} collapsed={collapsed} setCollapsed={setCollapsed} currentUser={currentUser}/>
+      <div className={`main-content ${collapsed?'sidebar-collapsed':''}`}>
+        <Header page={page} collapsed={collapsed} setCollapsed={setCollapsed} currentUser={currentUser}
+          onLogout={handleLogout} notifs={notifs} setNotifs={setNotifs} addToast={addToast}/>
+        <div className="page-content">{renderPage()}</div>
+      </div>
+    </div>
+    <Toast toasts={toasts} remove={removeToast}/>
+  </AppCtx.Provider>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
